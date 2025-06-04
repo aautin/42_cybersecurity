@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 type SpiderCommand = {
 	url : string,
 	recursive : boolean,
@@ -71,13 +73,63 @@ function getSpiderCommand() : SpiderCommand | undefined
 	return command;
 }
 
-function spider() : void
+async function spider()
 {
 	let command : SpiderCommand | undefined = getSpiderCommand();
 	if (command === undefined)
 		return ;
-	console.log(command);
-	return ;
+
+	if (command.recursive === false)
+		command.level = 1;
+
+	await scrap(new URL(command.url), command.path, command.level);
+}
+
+function getPath(url : URL, path : string) : string
+{
+	if (/^https?:\/\//.test(path))
+		return path;
+
+	else if (/^\/\//.test(path))
+    	return url.protocol + path;
+
+	else if (/^\//.test(path))
+   		return url.origin + '/' + path;
+
+	if (url.href.at(url.href.length - 1) !== '/')
+		return url.href + '/' + path;
+	else 
+		return url.href + path;
+}
+
+async function scrap(url : URL, path : string, level : number)
+{
+	if (level === 0)
+		return;
+
+	try {
+		const response = await fetch(url);
+		if (!response.ok)
+			throw new Error(`Response status: ${response.status}`);
+
+		
+		const contentType = response.headers.get('content-type');
+		if (contentType?.slice(0, 'text/html'.length) === 'text/html')
+		{
+			const text = await response.text();
+			const regex = /\b(?:src|href)=["']([^"']+\.(?:png|gif|jpg|jpeg|bmp))["']/gi;
+
+			let match = regex.exec(text); 
+			while (match !== null)
+			{
+				let path = getPath(url, String(match[1]));
+				console.log(path);
+				match = regex.exec(text);
+			}
+		}
+	} catch (error) {
+		console.error(error.message);
+	}
 }
 
 spider();
