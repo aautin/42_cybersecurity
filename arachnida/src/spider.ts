@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import * as fs from "fs";
 
 type SpiderCommand = {
 	url : string,
@@ -82,7 +83,18 @@ async function spider()
 	if (command.recursive === false)
 		command.level = 1;
 
-	await scrap(new URL(command.url), command.path, command.level);
+
+	if (!fs.existsSync(command.path))
+	{
+		try {
+			fs.mkdirSync(command.path);
+		}
+		catch (err) {
+			console.error(`./spider: ${command.path} doesn't exist and can't be created`);
+		}
+	}
+
+	await scrapWebsite(new URL(command.url), command.path, command.level);
 }
 
 function getPath(url : URL, path : string) : string
@@ -94,7 +106,7 @@ function getPath(url : URL, path : string) : string
     	return url.protocol + path;
 
 	else if (/^\//.test(path))
-   		return url.origin + '/' + path;
+   		return url.origin + path;
 
 	if (url.href.at(url.href.length - 1) !== '/')
 		return url.href + '/' + path;
@@ -102,7 +114,9 @@ function getPath(url : URL, path : string) : string
 		return url.href + path;
 }
 
-async function scrap(url : URL, path : string, level : number)
+async function scrapFile(url : URL, path : string) {}
+
+async function scrapWebsite(url : URL, dest : string, level : number)
 {
 	if (level === 0)
 		return;
@@ -112,7 +126,6 @@ async function scrap(url : URL, path : string, level : number)
 		if (!response.ok)
 			throw new Error(`Response status: ${response.status}`);
 
-		
 		const contentType = response.headers.get('content-type');
 		if (contentType?.slice(0, 'text/html'.length) === 'text/html')
 		{
@@ -122,8 +135,8 @@ async function scrap(url : URL, path : string, level : number)
 			let match = regex.exec(text); 
 			while (match !== null)
 			{
-				let path = getPath(url, String(match[1]));
-				console.log(path);
+				let matchURL = getPath(url, String(match[1]));
+				await scrapFile(new URL(matchURL), dest);
 				match = regex.exec(text);
 			}
 		}
