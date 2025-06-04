@@ -11,7 +11,7 @@ function getSpiderCommand() : SpiderCommand | undefined
 		url : "",
 		recursive : false,
 		level : 5,
-		path : ""
+		path : "./data/"
 	};
 
 	let index : number = 2;
