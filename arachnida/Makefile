@@ -7,7 +7,8 @@ SRC= $(addprefix $(SRC_DIR)/, $(addsuffix .ts, $(FILES)))
 DIST_DIR=dist
 DIST= $(addprefix $(DIST_DIR)/, $(addsuffix .js, $(FILES)))
 
-CC=npx tsc
+CC=npx tsc --target ES2020 --module ESNext --moduleResolution node
+
 OUTPUT_FLAG= --outDir $(DIST_DIR)
 
 NODE_MODULES=node_modules/typescript/bin/tsc node_modules/@types/node/package.json
@@ -15,6 +16,8 @@ NODE_MODULES=node_modules/typescript/bin/tsc node_modules/@types/node/package.js
 .PHONY: all re clean_dist clean_node_modules clean
 
 all: $(NODE_MODULES) $(DIST)
+
+
 
 re: clean_dist all
 
@@ -34,4 +37,3 @@ $(DIST_DIR):
 
 $(DIST_DIR)/%.js: $(SRC_DIR)/%.ts
 	$(CC) $^ $(OUTPUT_FLAG)
-
