@@ -1,4 +1,6 @@
+*DS_Store
 ./spider
 ./scorpion
 arachnida/dist
 arachnida/node_modules
+arachnida/data

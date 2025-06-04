@@ -74,6 +74,77 @@ function getSpiderCommand() : SpiderCommand | undefined
 	return command;
 }
 
+
+function getPath(url : URL, path : string) : string
+{
+	if (/^https?:\/\//.test(path))
+		return path;
+	
+	else if (/^\/\//.test(path))
+    	return url.protocol + path;
+	
+	else if (/^\//.test(path))
+   		return url.origin + path;
+
+	if (url.href.at(url.href.length - 1) !== '/')
+		return url.href + '/' + path;
+	else 
+		return url.href + path;
+}
+
+function getFileName(url : URL) : string
+{
+	let index = url.pathname.length - 1;
+	while (url.pathname[index] !== '/')
+		index--;
+
+	return url.pathname.substring(index);
+}
+
+async function scrapFile(url : URL, path : string)
+{
+	try {
+		const response = await fetch(url);
+		if (!response.ok)
+			throw new Error(`Response status: ${response.status}`);
+		
+		const buffer = await response.arrayBuffer();
+
+		fs.writeFileSync(path + getFileName(url), Buffer.from(buffer));
+	} catch (error) {
+		console.error(error.message);
+	}
+}
+
+async function scrapWebsite(url : URL, dest : string, level : number)
+{
+	if (level === 0)
+		return;
+	level--;
+
+	try {
+		const response = await fetch(url);
+		if (!response.ok)
+			throw new Error(`Response status: ${response.status}`);
+		
+		const contentType = response.headers.get('content-type');
+		if (contentType?.slice(0, 'text/html'.length) === 'text/html')
+			{
+				const text = await response.text();
+				const regex = /\b(?:src|href)=["']((?![^"']*File:)[^"']+\.(?:png|gif|jpg|jpeg|bmp))["']/gi;
+				
+				let match = regex.exec(text); 
+			while (match !== null)
+			{
+				await scrapFile(new URL(getPath(url, String(match[1]))), dest);
+				match = regex.exec(text);
+			}
+		}
+	} catch (error) {
+		console.error(error.message);
+	}
+}
+
 async function spider()
 {
 	let command : SpiderCommand | undefined = getSpiderCommand();
@@ -82,7 +153,6 @@ async function spider()
 
 	if (command.recursive === false)
 		command.level = 1;
-
 
 	if (!fs.existsSync(command.path))
 	{
@@ -95,54 +165,6 @@ async function spider()
 	}
 
 	await scrapWebsite(new URL(command.url), command.path, command.level);
-}
-
-function getPath(url : URL, path : string) : string
-{
-	if (/^https?:\/\//.test(path))
-		return path;
-
-	else if (/^\/\//.test(path))
-    	return url.protocol + path;
-
-	else if (/^\//.test(path))
-   		return url.origin + path;
-
-	if (url.href.at(url.href.length - 1) !== '/')
-		return url.href + '/' + path;
-	else 
-		return url.href + path;
-}
-
-async function scrapFile(url : URL, path : string) {}
-
-async function scrapWebsite(url : URL, dest : string, level : number)
-{
-	if (level === 0)
-		return;
-
-	try {
-		const response = await fetch(url);
-		if (!response.ok)
-			throw new Error(`Response status: ${response.status}`);
-
-		const contentType = response.headers.get('content-type');
-		if (contentType?.slice(0, 'text/html'.length) === 'text/html')
-		{
-			const text = await response.text();
-			const regex = /\b(?:src|href)=["']([^"']+\.(?:png|gif|jpg|jpeg|bmp))["']/gi;
-
-			let match = regex.exec(text); 
-			while (match !== null)
-			{
-				let matchURL = getPath(url, String(match[1]));
-				await scrapFile(new URL(matchURL), dest);
-				match = regex.exec(text);
-			}
-		}
-	} catch (error) {
-		console.error(error.message);
-	}
 }
 
 spider();
