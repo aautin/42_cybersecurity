@@ -74,22 +74,21 @@ function getSpiderCommand() : SpiderCommand | undefined
 	return command;
 }
 
-
-function getPath(url : URL, path : string) : string
+function getPath(url: URL, path: string): string
 {
 	if (/^https?:\/\//.test(path))
 		return path;
-	
+
 	else if (/^\/\//.test(path))
-    	return url.protocol + path;
-	
+		return url.protocol + path;
+
 	else if (/^\//.test(path))
-   		return url.origin + path;
+		return url.origin + path;
 
 	if (url.href.at(url.href.length - 1) !== '/')
 		return url.href + '/' + path;
-	else 
-		return url.href + path;
+	else
+	return url.href + path;
 }
 
 function getFileName(url : URL) : string
@@ -101,44 +100,91 @@ function getFileName(url : URL) : string
 	return url.pathname.substring(index);
 }
 
-async function scrapFile(url : URL, path : string)
+async function fetchImage(url : URL, path : string)
 {
-	try {
-		const response = await fetch(url);
-		if (!response.ok)
-			throw new Error(`Response status: ${response.status}`);
-		
-		const buffer = await response.arrayBuffer();
+	const response = await fetch(url);
+	if (!response.ok)
+		throw new Error(`${url.toString()}: error ${response.status}`);
+	
+	const buffer = await response.arrayBuffer();
+	
+	console.log(getFileName(url));
+	fs.writeFileSync(path + getFileName(url), Buffer.from(buffer));
+}
 
-		fs.writeFileSync(path + getFileName(url), Buffer.from(buffer));
+const imageVisited = new Set<string>();
+async function scrapImage(url : URL, path : string)
+{
+	if (imageVisited.has(url.href))
+		return;
+	imageVisited.add(url.href);
+
+	try 
+	{
+		try {
+			await fetchImage(url, path);
+		} catch (error) {
+			if (url.protocol === 'https:') url.protocol = 'http:';
+			else url.protocol = 'https:';
+
+			await fetchImage(url, path);
+		}
 	} catch (error) {
 		console.error(error.message);
 	}
 }
 
-async function scrapWebsite(url : URL, dest : string, level : number)
+async function fecthHTML(url : URL, dest : string, level : number)
 {
-	if (level === 0)
-		return;
-	level--;
+	const response = await fetch(url);
+	if (!response.ok)
+		throw new Error(`${url.toString()}: error ${response.status}`);
+	
+	const contentType = response.headers.get('content-type');
+	if (contentType?.slice(0, 'text/html'.length) === 'text/html')
+	{
+		const text = await response.text();
 
-	try {
-		const response = await fetch(url);
-		if (!response.ok)
-			throw new Error(`Response status: ${response.status}`);
-		
-		const contentType = response.headers.get('content-type');
-		if (contentType?.slice(0, 'text/html'.length) === 'text/html')
-			{
-				const text = await response.text();
-				const regex = /\b(?:src|href)=["']((?![^"']*File:)[^"']+\.(?:png|gif|jpg|jpeg|bmp))["']/gi;
-				
-				let match = regex.exec(text); 
+		{	// html scrapping
+			const regex = /<(a|iframe|link)\b[^>]*(?:href|src)=["']([^"']+\.html?)["']/gi;
+
+			let match = regex.exec(text); 
 			while (match !== null)
 			{
-				await scrapFile(new URL(getPath(url, String(match[1]))), dest);
+				await scrapHTML(new URL(getPath(url, String(match[2]))), dest, level);
 				match = regex.exec(text);
 			}
+		}
+		{	// images scrapping
+			console.log(`\x1b[33mScrapping images of ${url.toString()}\x1b[0m`);
+			const regex = /\b(?:src|href)=["']((?![^"']*File:)[^"']+\.(?:png|gif|jpg|jpeg|bmp))["']/gi;
+			
+			let match = regex.exec(text); 
+			while (match !== null)
+			{
+				await scrapImage(new URL(getPath(url, String(match[1]))), dest);
+				match = regex.exec(text);
+			}
+		}
+	}
+}
+	
+const HTMLVisited = new Set<string>();
+async function scrapHTML(url : URL, dest : string, level : number)
+{
+	if (level === 0 || HTMLVisited.has(url.href))
+		return;
+	level--;
+	HTMLVisited.add(url.href);
+	
+	try {
+		try {
+			await fecthHTML(url, dest, level);
+		} catch (error) {
+			if (url.protocol === 'https:') url.protocol = 'http:';
+			else url.protocol = 'https:';
+
+			await fecthHTML(url, dest, level);
 		}
 	} catch (error) {
 		console.error(error.message);
@@ -164,7 +210,7 @@ async function spider()
 		}
 	}
 
-	await scrapWebsite(new URL(command.url), command.path, command.level);
+	await scrapHTML(new URL(command.url), command.path, command.level);
 }
 
 spider();
