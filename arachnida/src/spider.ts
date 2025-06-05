@@ -130,7 +130,7 @@ async function scrapImage(url : URL, path : string)
 			await fetchImage(url, path);
 		}
 	} catch (error) {
-		console.error(error.message);
+		console.error("\x1b[35m" + error.message + "\x1b[0m");
 	}
 }
 
@@ -146,7 +146,7 @@ async function fecthHTML(url : URL, dest : string, level : number)
 		const text = await response.text();
 
 		{	// html scrapping
-			const regex = /<(a|iframe|link)\b[^>]*(?:href|src)=["']([^"']+\.html?)["']/gi;
+			const regex = /<(a|iframe|link)\b[^>]*(?:href|src)=["']([^"']+\.html)["']/gi;
 
 			let match = regex.exec(text); 
 			while (match !== null)
@@ -187,7 +187,7 @@ async function scrapHTML(url : URL, dest : string, level : number)
 			await fecthHTML(url, dest, level);
 		}
 	} catch (error) {
-		console.error(error.message);
+		console.error("\x1b[31m" + error.message + "\x1b[0m");
 	}
 }
 
