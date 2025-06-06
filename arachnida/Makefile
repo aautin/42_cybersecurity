@@ -11,13 +11,11 @@ CC=npx tsc --target ES2020 --module ESNext --moduleResolution node
 
 OUTPUT_FLAG= --outDir $(DIST_DIR)
 
-NODE_MODULES=node_modules/typescript/bin/tsc node_modules/@types/node/package.json
+NODE_MODULES=node_modules/typescript/bin/tsc node_modules/@types/node/package.json node_modules/exifr/src/Exifr.mjs
 
 .PHONY: all re clean_dist clean_node_modules clean
 
 all: $(NODE_MODULES) $(DIST)
-
-
 
 re: clean_dist all
 

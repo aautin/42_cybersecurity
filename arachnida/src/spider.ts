@@ -36,17 +36,17 @@ function getSpiderCommand() : SpiderCommand | undefined
 		{
 			if (command.recursive === false)
 			{
-				console.error("./spider: cannot use -l if -r isn't selected earlier");
+				console.error("spider: cannot use -l if -r isn't selected earlier");
 				return undefined;
 			}
 			if (process.argv.at(index + 1) === undefined)
 			{
-				console.error("./spider: -l option needs an argument (./spider -r -l [N] URL)");
+				console.error("spider: -l option needs an argument (spider -r -l [N] URL)");
 				return undefined;
 			}
 			if (Number.isNaN(Number(process.argv.at(index + 1))))
 			{
-				console.error("./spider: -l option's argument must be a number (./spider -r -l [N] URL)");
+				console.error("spider: -l option's argument must be a number (spider -r -l [N] URL)");
 				return undefined;
 			}
 			command.level = Number(process.argv.at(index + 1));
@@ -56,7 +56,7 @@ function getSpiderCommand() : SpiderCommand | undefined
 		{
 			if (process.argv.at(index + 1) === undefined)
 			{
-				console.error("./spider: -p option needs an argument (./spider -p [PATH] URL)");
+				console.error("spider: -p option needs an argument (spider -p [PATH] URL)");
 				return undefined;
 			}
 			command.path = process.argv.at(index + 1)!;
@@ -66,7 +66,7 @@ function getSpiderCommand() : SpiderCommand | undefined
 	}
 
 	if (index !== process.argv.length - 1) {
-		console.error("Usage: ./spider [-rlp] URL");
+		console.error("Usage: spider [-rlp] URL");
 		return undefined;
 	}
 
@@ -206,7 +206,7 @@ async function spider()
 			fs.mkdirSync(command.path);
 		}
 		catch (err) {
-			console.error(`./spider: ${command.path} doesn't exist and can't be created`);
+			console.error(`spider: ${command.path} doesn't exist and can't be created`);
 		}
 	}
 

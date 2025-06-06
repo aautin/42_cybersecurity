@@ -5,6 +5,11 @@ import exifr from 'exifr';
 async function scorpion() {
 	let filenames = process.argv.slice(2);
 
+	if (filenames.length < 0) {
+		console.error("Usage: scorpion FILE1 [FILE2 ...]");
+		return;		
+	}
+
 	while (filenames.length) {
 		let file: string = filenames.pop()!;
 
