@@ -14,9 +14,9 @@ void print_hmac_result(uint32_t *result)
 {
 	// Assuming result is an array of 5 uint32_t values
 	// This function prints the HMAC result in a readable format
-	printf("HMAC result[160]: ");
+	printf("HMAC result[160]:        ");
 	for (int i = 0; i < 5; ++i) {
-		printf("%08x ", result[i]);
+		printf("%08x", result[i]);
 	}
 	printf("\n");
 }

@@ -1,7 +1,7 @@
 NAME=ft_otp
 
 CC=cc
-CFLAGS=-Wall -Werror -Wextra -g
+CFLAGS=-Wall -Werror -Wextra -g3
 
 INC_LIB=sha1
 LIB=sha1
@@ -10,7 +10,7 @@ INC_DIR=-Iinc -Isha1/inc
 SRC_DIR=src
 OBJ_DIR=obj
 
-FILES=hmac debug parsing
+FILES=hmac debug parsing time
 
 SRC=$(addsuffix .c, $(addprefix $(SRC_DIR)/, $(FILES)))
 OBJ=$(addsuffix .o, $(addprefix $(OBJ_DIR)/, $(FILES)))
@@ -40,4 +40,5 @@ clean:
 	rm -rf $(OBJ_DIR)
 
 fclean: clean
+	rm -f $(INC_LIB)/lib$(LIB).a
 	rm -f $(NAME)

@@ -27,16 +27,3 @@ size_t hex_to_bytes(const char *hex, uint8_t **out)
 	}
 	return bit_len;
 }
-
-void pad(uint8_t **src, size_t byte_len)
-{
-	uint8_t* dest = calloc(64, sizeof(uint8_t));
-	if (dest == NULL) {
-		*src = NULL;
-		return;
-	}
-	memcpy(dest, *src, byte_len);
-
-	free(*src);
-	*src = dest;
-}
