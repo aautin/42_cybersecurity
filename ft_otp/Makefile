@@ -10,7 +10,7 @@ INC_DIR=-Iinc -Isha1/inc
 SRC_DIR=src
 OBJ_DIR=obj
 
-FILES=hmac debug parsing time totp
+FILES=main hmac debug parsing time totp
 
 SRC=$(addsuffix .c, $(addprefix $(SRC_DIR)/, $(FILES)))
 OBJ=$(addsuffix .o, $(addprefix $(OBJ_DIR)/, $(FILES)))
