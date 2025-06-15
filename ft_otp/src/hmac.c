@@ -4,13 +4,13 @@
 #include "hmac.h"
 #include "utils.h"
 
+#define IPAD 0x36
+#define OPAD 0x5c
+
 void hmac(char* key, void (*hash)(t_list*, uint32_t*), uint32_t* result)
 {
 	uint8_t*	bin;
 	size_t		bit_len = hex_to_bytes(key, &bin);
-
-	(void) hash;
-	(void) *result;
 
 	if (bit_len > 512) {
 		uint32_t hash_result[5] = {0};
@@ -25,8 +25,17 @@ void hmac(char* key, void (*hash)(t_list*, uint32_t*), uint32_t* result)
 
 	pad(&bin, (bit_len / 8) + ((bit_len % 8) != 0));
 	bit_len = 64 * 8;
-	print_bytes(bin, bit_len);
+
+	uint8_t	key_ipad[64];
+	uint8_t	key_opad[64];
+	for (size_t i = 0; i < 64; ++i) {
+		key_ipad[i] = bin[i] ^ IPAD;
+		key_opad[i] = bin[i] ^ OPAD;
+	}
 	free(bin);
+
+	
+	print_bytes(bin, bit_len);
 }
 
 int main(int argc, char** argv)
