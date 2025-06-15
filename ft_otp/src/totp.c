@@ -22,7 +22,7 @@ uint32_t dynamic_truncate(uint32_t hmac_result[5]) {
     return bin_code;
 }
 
-uint32_t	totp(uint8_t* key, uint64_t key_size)
+uint32_t totp(uint8_t* key, uint64_t key_size)
 {
 	uint64_t	counter = endian64(get_time_counter());
 	uint8_t*	counter_ptr = (uint8_t*) &counter;
