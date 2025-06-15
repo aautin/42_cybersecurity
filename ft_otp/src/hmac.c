@@ -4,7 +4,6 @@
 #include "endian.h"
 #include "hmac.h"
 #include "mysha1.h"
-#include "utils.h"
 
 #define IPAD 0x36
 #define OPAD 0x5c
