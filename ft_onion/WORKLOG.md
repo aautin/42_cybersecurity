@@ -66,3 +66,4 @@
 	###############MYEDIT##################
 	```
 	To add in the http{} section
+10. Generate with AI a simple index.html
