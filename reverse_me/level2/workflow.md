@@ -75,7 +75,7 @@ compare the length string at ebp-0x1d with 8
    0x000013c6 <+246>:	jae    0x13ee <main+286>
 ```
 
-## 5. main+297 : 2 < strlen(input)
+## 5. main+297 : 2 < strlen(input) ? step 7 : step 6
 ecx = eax = strlen(input)
 ```
    0x000013d5 <+261>:	lea    ecx,[ebp-0x35]
