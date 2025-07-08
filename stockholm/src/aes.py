@@ -1,0 +1,47 @@
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.backends import default_backend
+import os
+
+#----------------- AES KEY GENERATION -----------------
+def generate_aes_key(key_size=32):
+    return os.urandom(key_size)
+#----------------------------------
+
+
+
+# ----------------- USE OF AES KEY -----------------
+def aes_encrypt(key: bytes, plaintext: bytes) -> bytes:
+    # Genere un premier bloc random de 128 bits (Initialisation Vector) rendant unique chaque chiffrage
+    iv = os.urandom(16)
+
+    # Pad le contenu pour entrer dans des blocs de 128 bits
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(plaintext) + padder.finalize()
+
+    # Cree un instance du encryptor d'un object Cipher AES en mode CBC avec la cle et IV
+    encryptor = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend()).encryptor()
+
+    # Chiffre les bytes et stocke le ciphertext
+    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
+
+    # Retourner le ciphertext mais précédé du IV non chiffré (obligatoire pour dechiffrage)
+    return iv + ciphertext
+
+def aes_decrypt(key: bytes, ciphertext: bytes) -> str:
+    # Sépare l’IV (les 16 premiers octets) et le texte chiffré
+    iv = ciphertext[:16]
+    actual_ciphertext = ciphertext[16:]
+
+    # Cree un instance du decryptor d'un object Cipher AES en mode CBC avec la cle et IV
+    decryptor = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend()).decryptor()
+
+    # Déchiffre le ciphertext
+    padded_plaintext = decryptor.update(actual_ciphertext) + decryptor.finalize()
+
+    # Enleve le padding du contenu final
+    unpadder = padding.PKCS7(128).unpadder()
+    plaintext_bytes = unpadder.update(padded_plaintext) + unpadder.finalize()
+
+    return plaintext_bytes
+# ----------------------------------

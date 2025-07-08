@@ -1,2 +1,10 @@
 ./spider
 ./scorpion
+arachnida/dist
+arachnida/node_modules
+arachnida/data
+./ft_otp
+ft_otp/ft_otp
+./stockholm/key
+./stockholm/key.pub
+./stockholm/venv
