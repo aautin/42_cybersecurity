@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+ENV HOME=/home/aautin
+RUN mkdir /home/aautin
+COPY infection /home/aautin
+
+ENV VIRTUAL_ENV=/WannaCry/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+WORKDIR /WannaCry
+
+COPY src/ ./src/
+COPY requirements ./requirements
+COPY Makefile ./Makefile
+
+RUN python3 -m venv $VIRTUAL_ENV \
+    && pip install --upgrade pip \
+    && pip install -r requirements
