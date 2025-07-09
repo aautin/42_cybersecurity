@@ -8,3 +8,6 @@ ft_otp/ft_otp
 ./stockholm/key
 ./stockholm/key.pub
 ./stockholm/venv
+stockholm/key
+stockholm/key.pub
+stockholm/venv
