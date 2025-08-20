@@ -1,0 +1,43 @@
+services:
+  inquisitor:
+    build: ./inquisitor
+    mac_address: $INQUISITOR_MAC
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    env_file:
+      - .env
+    networks:
+      arp_net:
+        ipv4_address: $INQUISITOR_IP
+
+  client:
+    build: ./client
+    mac_address: $CLIENT_MAC
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    env_file:
+      - .env
+    networks:
+      arp_net:
+        ipv4_address: $CLIENT_IP
+
+  server:
+    build: ./server
+    mac_address: $SERVER_MAC
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    env_file:
+      - .env
+    networks:
+      arp_net:
+        ipv4_address: $SERVER_IP
+
+networks:
+  arp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

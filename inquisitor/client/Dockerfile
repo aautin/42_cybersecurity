@@ -1,0 +1,3 @@
+FROM debian:latest
+RUN apt update && apt install -y ftp net-tools iputils-ping
+CMD tail -f
