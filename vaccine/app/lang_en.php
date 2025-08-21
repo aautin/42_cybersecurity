@@ -1,0 +1,1 @@
+<font color="green">Thanks for your interest in bwapp!</font>
