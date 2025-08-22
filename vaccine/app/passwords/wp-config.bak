@@ -1,6 +1,6 @@
 <?php
 // ** MySQL settings ** //
-define('DB_NAME', 'bwapp');    // The name of the database
+define('DB_NAME', 'bWAPP');    // The name of the database
 define('DB_USER', 'thor');     // Your MySQL username
 define('DB_PASSWORD', 'Asgard'); // ...and password
 define('DB_HOST', 'localhost');    // 99% chance you won't need to change this value

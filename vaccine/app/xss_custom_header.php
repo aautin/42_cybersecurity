@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -68,7 +68,7 @@ function xss($data)
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - XSS</title>
+<title>bWAPP - XSS</title>
 
 </head>
 
@@ -76,7 +76,7 @@ function xss($data)
 
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -112,14 +112,14 @@ function xss($data)
 
     <p>
 
-    Content of our <b>bwapp</b> header:
+    Content of our <b>bWAPP</b> header:
 
 <?php
 
 foreach(getallheaders() as $name => $value)
 {
 
-    if($name == "bwapp")
+    if($name == "bWAPP")
     {
 
         echo "<i>" . xss($value) ."</i>";
@@ -144,7 +144,7 @@ foreach(getallheaders() as $name => $value)
     
 <div id="disclaimer">
           
-    <p>bwapp is for educational purposes only / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need <a href="http://www.mmebvba.com" target="_blank">training</a>? / &copy; 2014 MME BVBA</p>
+    <p>bWAPP is for educational purposes only / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need <a href="http://www.mmebvba.com" target="_blank">training</a>? / &copy; 2014 MME BVBA</p>
    
 </div>
     

@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -35,7 +35,7 @@ include("selections.php");
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - Credits</title>
+<title>bWAPP - Credits</title>
 
 </head>
 
@@ -43,7 +43,7 @@ include("selections.php");
 
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -78,15 +78,15 @@ include("selections.php");
     <p>O yeah... who am I? Well my name is Malik. I'm a security consultant working for my own company, <a href="http://www.mmeit.be/en" target="_blank">MME</a>.<br />
     We are specialized in Penetration Testing, Ethical Hacking, InfoSec Training, and Evil Bee Hunting.</p>
 
-    <p>Download our <a href="http://goo.gl/uVBGnq" target="_blank">What is bwapp?</a> introduction tutorial, including free materials and exercises...<br />
-    I'm also happy to give bwapp talks and workshops at your security convention or seminar!</p>
+    <p>Download our <a href="http://goo.gl/uVBGnq" target="_blank">What is bWAPP?</a> introduction tutorial, including free materials and exercises...<br />
+    I'm also happy to give bWAPP talks and workshops at your security convention or seminar!</p>
 
     <p>Need a training? We offer the following exclusive courses and workshops (on demand, at your location):
 
     <ul>
 
-        <li>Attacking & Defending Web Apps with bwapp : 2-day Web Application Security course (<a href="http://goo.gl/ASuPa1" target="_blank">pdf</a>)</li>
-        <li>Plant the Flags with bwapp : 4-hour offensive Web Application Hacking workshop (<a href="http://goo.gl/fAwCex" target="_blank">pdf</a>)</li>
+        <li>Attacking & Defending Web Apps with bWAPP : 2-day Web Application Security course (<a href="http://goo.gl/ASuPa1" target="_blank">pdf</a>)</li>
+        <li>Plant the Flags with bWAPP : 4-hour offensive Web Application Hacking workshop (<a href="http://goo.gl/fAwCex" target="_blank">pdf</a>)</li>
         <li>Ethical Hacking Basics : 1-day Ethical Hacking course (<a href="http://goo.gl/09ccSf" target="_blank">pdf</a>)</li>
         <li>Ethical Hacking Advanced : 1-day comprehensive Ethical Hacking course (<a href="http://goo.gl/PHLnQF" target="_blank">pdf</a>)</li>
         <li>Windows Server 2012 Security : 2-day Windows Security course (<a href="http://goo.gl/4C0JfW" target="_blank">pdf</a>)</li>
@@ -110,7 +110,7 @@ include("selections.php");
 
 <div id="disclaimer">
 
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
 
 </div>
 

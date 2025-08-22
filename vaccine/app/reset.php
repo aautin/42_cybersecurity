@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -92,11 +92,11 @@ else
     // Database operations
 
     // Recreates the database
-    if(isset($_GET["secret"]) && $_GET["secret"]== "bwapp")
+    if(isset($_GET["secret"]) && $_GET["secret"]== "bWAPP")
     {
 
-        // Deletes the database 'bwapp'
-        $sql = "DROP DATABASE IF EXISTS bwapp";
+        // Deletes the database 'bWAPP'
+        $sql = "DROP DATABASE IF EXISTS bWAPP";
 
         $recordset = $link->query($sql);          
 
@@ -107,8 +107,8 @@ else
 
         }
 
-        // Creates the database 'bwapp'
-        $sql = "CREATE DATABASE IF NOT EXISTS bwapp";
+        // Creates the database 'bWAPP'
+        $sql = "CREATE DATABASE IF NOT EXISTS bWAPP";
 
         $recordset = $link->query($sql);             
 
@@ -119,8 +119,8 @@ else
 
         }
 
-        // Selects the database 'bwapp'
-        mysqli_select_db($link,"bwapp");
+        // Selects the database 'bWAPP'
+        mysqli_select_db($link,"bWAPP");
 
         // Drops the table 'users' 
         $sql = "DROP TABLE IF EXISTS users";
@@ -367,7 +367,7 @@ else
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - Reset</title>
+<title>bWAPP - Reset</title>
 
 </head>
 
@@ -375,7 +375,7 @@ else
 
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -422,7 +422,7 @@ else
 
 <div id="disclaimer">
 
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
 
 </div>
 

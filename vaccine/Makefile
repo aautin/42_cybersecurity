@@ -1,5 +1,15 @@
-all:
-	docker-compose up -d --build
+all: build up
+
+up:
+	docker-compose up -d
+down:
+	docker-compose down
+
+build:
+	docker-compose build
+
+restart:
+	docker-compose restart
 
 clean:
 	docker-compose down --rmi all --remove-orphans --timeout 3

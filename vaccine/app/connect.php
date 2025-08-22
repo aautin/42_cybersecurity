@@ -1,86 +1,89 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-require_once 'config.inc.php'; // sets $server, $username, $password, $database
+/*
 
-if (!function_exists('mysql_connect')) {
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
+It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+It is for security-testing and educational purposes only.
 
-    $GLOBALS['_bwapp_mysqli'] = null;
+Enjoy!
 
-    function mysql_connect($host = null, $user = null, $pass = null) {
-        if ($GLOBALS['_bwapp_mysqli'] instanceof mysqli) return $GLOBALS['_bwapp_mysqli'];
-        global $server, $username, $password;
-        $h = $host ?: $server;
-        $u = $user ?: $username;
-        $p = $pass ?: $password;
-        $link = @new mysqli($h, $u, $p);
-        if ($link->connect_error) die('MySQL connect error: ' . $link->connect_error);
-        $GLOBALS['_bwapp_mysqli'] = $link;
-        return $link;
-    }
+Malik Mesellem
+Twitter: @MME_IT
 
-    function mysql_select_db($db, $link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'] ?: mysql_connect();
-        if (!$lnk->select_db($db)) die('Cannot select DB: ' . $lnk->error);
-        return true;
-    }
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
-    function mysql_query($query, $link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'] ?: mysql_connect();
-        $res = $lnk->query($query);
-        if ($res === false) die('MySQL query error: ' . $lnk->error);
-        return $res;
-    }
+*/
 
-    function mysql_real_escape_string($str, $link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'] ?: mysql_connect();
-        return $lnk->real_escape_string($str);
-    }
+// Connection settings
+include("config.inc.php");
 
-    function mysql_fetch_array($result) {
-        return $result->fetch_array(MYSQLI_BOTH);
-    }
+// Use mysqli instead of the removed mysql_* extension and provide shims
+// Connect to the server
+$link = @new mysqli($server, $username, $password);
 
-    function mysql_fetch_assoc($result) {
-        return $result->fetch_assoc();
-    }
+if($link->connect_error)
+{
+    die("Could not connect to the server: " . $link->connect_error);
+}
 
-    function mysql_num_rows($result) {
-        return $result->num_rows;
-    }
+// Select database
+$database = @mysqli_select_db($link, $database);
 
-    function mysql_insert_id($link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'];
-        return $lnk ? $lnk->insert_id : 0;
-    }
+if(!$database)
+{
+    die("Could not connect to the database: " . mysqli_error($link));
+}
 
-    function mysql_affected_rows($link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'];
-        return $lnk ? $lnk->affected_rows : 0;
-    }
-
-    function mysql_error($link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'];
-        return $lnk ? $lnk->error : '';
-    }
-
-    function mysql_free_result($result) {
-        if ($result instanceof mysqli_result) $result->free();
-        return true;
-    }
-
-    function mysql_close($link = null) {
-        $lnk = $link ?: $GLOBALS['_bwapp_mysqli'];
-        if ($lnk instanceof mysqli) {
-            $lnk->close();
-            $GLOBALS['_bwapp_mysqli'] = null;
-            return true;
-        }
-        return false;
+// --- mysql_* compatibility shims for legacy pages ---
+if(!function_exists('mysql_query')) {
+    function mysql_query($query, $link_identifier = null) {
+        $l = $link_identifier ?: ($GLOBALS['link'] ?? null);
+        return mysqli_query($l, $query);
     }
 }
 
-$link = mysql_connect();
-mysql_select_db($database);
+if(!function_exists('mysql_fetch_array')) {
+    function mysql_fetch_array($result, $result_type = MYSQLI_BOTH) {
+        return mysqli_fetch_array($result, $result_type);
+    }
+}
+
+if(!function_exists('mysql_num_rows')) {
+    function mysql_num_rows($result) {
+        return mysqli_num_rows($result);
+    }
+}
+
+if(!function_exists('mysql_error')) {
+    function mysql_error($link_identifier = null) {
+        $l = $link_identifier ?: ($GLOBALS['link'] ?? null);
+        return mysqli_error($l);
+    }
+}
+
+if(!function_exists('mysql_real_escape_string')) {
+    function mysql_real_escape_string($string, $link_identifier = null) {
+        $l = $link_identifier ?: ($GLOBALS['link'] ?? null);
+        return mysqli_real_escape_string($l, $string);
+    }
+}
+
+if(!function_exists('mysql_close')) {
+    function mysql_close($link_identifier = null) {
+        $l = $link_identifier ?: ($GLOBALS['link'] ?? null);
+        return mysqli_close($l);
+    }
+}
+
+if(!function_exists('mysql_select_db')) {
+    function mysql_select_db($database_name, $link_identifier = null) {
+        $l = $link_identifier ?: ($GLOBALS['link'] ?? null);
+        return mysqli_select_db($l, $database_name);
+    }
+}
+
+// ---------------------------------------------------
+
 ?>

@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -31,7 +31,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - Info</title>
+<title>bWAPP - Info</title>
 
 </head>
 
@@ -39,7 +39,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -67,20 +67,20 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
     <h1>Info</h1>
 
-    <p>bwapp, or a <i>buggy web application</i>, is a free and open source deliberately insecure web application.<br />
+    <p>bWAPP, or a <i>buggy web application</i>, is a free and open source deliberately insecure web application.<br />
     It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.<br />
-    bwapp prepares one to conduct successful penetration testing and ethical hacking projects.</p>
+    bWAPP prepares one to conduct successful penetration testing and ethical hacking projects.</p>
 
-    <p>What makes bwapp so unique? Well, it has over 100 web vulnerabilities!<br />
+    <p>What makes bWAPP so unique? Well, it has over 100 web vulnerabilities!<br />
     It covers all major known web bugs, including all risks from the <a href="http://www.owasp.org" target="blank">OWASP</a> Top 10 project.</p>
 
-    <p>bwapp is a PHP application that uses a MySQL database. It can be hosted on Linux, Windows and Mac with Apache/IIS and MySQL.
+    <p>bWAPP is a PHP application that uses a MySQL database. It can be hosted on Linux, Windows and Mac with Apache/IIS and MySQL.
     It can also be installed with WAMP or XAMPP.<br />
-    Another possibility is to download the <i>bee-box</i>, a custom Linux VM pre-installed with bwapp.</p>
+    Another possibility is to download the <i>bee-box</i>, a custom Linux VM pre-installed with bWAPP.</p>
 
-    <p>Download our <a href="http://goo.gl/uVBGnq" target="_blank">What is bwapp?</a> introduction tutorial, including free exercises...</p>
+    <p>Download our <a href="http://goo.gl/uVBGnq" target="_blank">What is bWAPP?</a> introduction tutorial, including free exercises...</p>
 
-    <p>bwapp is for educational purposes. Education, the most powerful weapon which we can use to change the world.
+    <p>bWAPP is for educational purposes. Education, the most powerful weapon which we can use to change the world.
     Have fun with this free and open source project!</p>
 
     <p>Cheers, Malik Mesellem</p>
@@ -98,7 +98,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
 <div id="disclaimer">
 
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
 
 </div>
 

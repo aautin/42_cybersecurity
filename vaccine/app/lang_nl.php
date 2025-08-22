@@ -1,1 +1,1 @@
-<font color="green">Bedankt voor uw interesse in bwapp!</font>
+<font color="green">Bedankt voor uw interesse in bWAPP!</font>

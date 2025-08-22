@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -168,31 +168,31 @@ if(isset($_REQUEST["secret"]))
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - Broken Authentication</title>
+<title>bWAPP - Broken Authentication</title>
 
 <script language="javascript">   
 
 function unlock_secret()
 {
 
-    var bwapp = "bash update killed my shells!"
+    var bWAPP = "bash update killed my shells!"
 
-    var a = bwapp.charAt(0);  var d = bwapp.charAt(3);  var r = bwapp.charAt(16);
-    var b = bwapp.charAt(1);  var e = bwapp.charAt(4);  var j = bwapp.charAt(9);
-    var c = bwapp.charAt(2);  var f = bwapp.charAt(5);  var g = bwapp.charAt(4);
-    var j = bwapp.charAt(9);  var h = bwapp.charAt(6);  var l = bwapp.charAt(11);
-    var g = bwapp.charAt(4);  var i = bwapp.charAt(7);  var x = bwapp.charAt(4);
-    var l = bwapp.charAt(11); var p = bwapp.charAt(23); var m = bwapp.charAt(4);
-    var s = bwapp.charAt(17); var k = bwapp.charAt(10); var d = bwapp.charAt(23);
-    var t = bwapp.charAt(2);  var n = bwapp.charAt(12); var e = bwapp.charAt(4);
-    var a = bwapp.charAt(1);  var o = bwapp.charAt(13); var f = bwapp.charAt(5);
-    var b = bwapp.charAt(1);  var q = bwapp.charAt(15); var h = bwapp.charAt(9);
-    var c = bwapp.charAt(2);  var h = bwapp.charAt(2);  var i = bwapp.charAt(7);
-    var j = bwapp.charAt(5);  var i = bwapp.charAt(7);  var y = bwapp.charAt(22);
-    var g = bwapp.charAt(1);  var p = bwapp.charAt(4);  var p = bwapp.charAt(28);
-    var l = bwapp.charAt(11); var k = bwapp.charAt(14);
-    var q = bwapp.charAt(12); var n = bwapp.charAt(12);
-    var m = bwapp.charAt(4);  var o = bwapp.charAt(19);
+    var a = bWAPP.charAt(0);  var d = bWAPP.charAt(3);  var r = bWAPP.charAt(16);
+    var b = bWAPP.charAt(1);  var e = bWAPP.charAt(4);  var j = bWAPP.charAt(9);
+    var c = bWAPP.charAt(2);  var f = bWAPP.charAt(5);  var g = bWAPP.charAt(4);
+    var j = bWAPP.charAt(9);  var h = bWAPP.charAt(6);  var l = bWAPP.charAt(11);
+    var g = bWAPP.charAt(4);  var i = bWAPP.charAt(7);  var x = bWAPP.charAt(4);
+    var l = bWAPP.charAt(11); var p = bWAPP.charAt(23); var m = bWAPP.charAt(4);
+    var s = bWAPP.charAt(17); var k = bWAPP.charAt(10); var d = bWAPP.charAt(23);
+    var t = bWAPP.charAt(2);  var n = bWAPP.charAt(12); var e = bWAPP.charAt(4);
+    var a = bWAPP.charAt(1);  var o = bWAPP.charAt(13); var f = bWAPP.charAt(5);
+    var b = bWAPP.charAt(1);  var q = bWAPP.charAt(15); var h = bWAPP.charAt(9);
+    var c = bWAPP.charAt(2);  var h = bWAPP.charAt(2);  var i = bWAPP.charAt(7);
+    var j = bWAPP.charAt(5);  var i = bWAPP.charAt(7);  var y = bWAPP.charAt(22);
+    var g = bWAPP.charAt(1);  var p = bWAPP.charAt(4);  var p = bWAPP.charAt(28);
+    var l = bWAPP.charAt(11); var k = bWAPP.charAt(14);
+    var q = bWAPP.charAt(12); var n = bWAPP.charAt(12);
+    var m = bWAPP.charAt(4);  var o = bWAPP.charAt(19);
 
     var secret = (d + "" + j + "" + k + "" + q + "" + x + "" + t + "" +o + "" + g + "" + h + "" + d + "" + p);
 
@@ -222,7 +222,7 @@ function unlock_secret()
     
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -283,7 +283,7 @@ function unlock_secret()
     
 <div id="disclaimer">
           
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
    
 </div>
     

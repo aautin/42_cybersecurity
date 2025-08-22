@@ -3,10 +3,7 @@ services:
     image: mysql:5.7
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: bwapp
-      MYSQL_USER: bwapp
-      MYSQL_PASSWORD: bwapp_pass
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     volumes:
       - db_data:/var/lib/mysql
       - ./db/init:/docker-entrypoint-initdb.d:ro
@@ -17,11 +14,6 @@ services:
     build: ./back
     depends_on:
       - db
-    environment:
-      BWAPP_DB_HOST: db
-      BWAPP_DB_NAME: bwapp
-      BWAPP_DB_USER: bwapp
-      BWAPP_DB_PASS: bwapp_pass
     volumes:
       - ./app:/var/www/html
     networks:

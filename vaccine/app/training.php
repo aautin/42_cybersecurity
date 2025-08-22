@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -31,7 +31,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - Talks & Training</title>
+<title>bWAPP - Talks & Training</title>
 
 </head>
 
@@ -39,7 +39,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -67,7 +67,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
     <h1>Talks & Training</h1>
 
-    <p>We are happy to give bwapp talks and workshops at your security convention or seminar!<br />
+    <p>We are happy to give bWAPP talks and workshops at your security convention or seminar!<br />
     This year we were at 
     <a href="http://bsidesorlando.org/2014/malik-mesellem-what-is-bwapp-web-application-penetration-testing-with-bwapp" target="_blank">B-Sides Orlando</a>, 
     <a href="http://www.infosecurity.be" target="_blank">Infosecurity Belgium</a>, 
@@ -78,8 +78,8 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
     <ul>
 
-        <li>Attacking & Defending Web Apps with bwapp : 2-day Web Application Security course (<a href="http://goo.gl/ASuPa1" target="_blank">pdf</a>)</li>
-        <li>Plant the Flags with bwapp : 4-hour offensive Web Application Hacking workshop (<a href="http://goo.gl/fAwCex" target="_blank">pdf</a>)</li>
+        <li>Attacking & Defending Web Apps with bWAPP : 2-day Web Application Security course (<a href="http://goo.gl/ASuPa1" target="_blank">pdf</a>)</li>
+        <li>Plant the Flags with bWAPP : 4-hour offensive Web Application Hacking workshop (<a href="http://goo.gl/fAwCex" target="_blank">pdf</a>)</li>
         <li>Ethical Hacking Basics : 1-day Ethical Hacking course (<a href="http://goo.gl/09ccSf" target="_blank">pdf</a>)</li>
         <li>Ethical Hacking Advanced : 1-day comprehensive Ethical Hacking course (<a href="http://goo.gl/PHLnQF" target="_blank">pdf</a>)</li>
         <li>Windows Server 2012 Security : 2-day Windows Security course (<a href="http://goo.gl/4C0JfW" target="_blank">pdf</a>)</li>
@@ -106,7 +106,7 @@ bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivativ
 
 <div id="disclaimer">
 
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
 
 </div>
 

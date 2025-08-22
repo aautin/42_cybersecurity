@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,7 +12,7 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
@@ -177,13 +177,13 @@ if(isset($_REQUEST["action"]))
                             }
 
                             // Sends an activation mail to the user                    
-                            $subject = "bwapp - New User";
+                            $subject = "bWAPP - New User";
                             $server = $_SERVER["HTTP_HOST"];
                             $sender = $smtp_sender;
 
                             $content = "Welcome " . ucwords($login) . ",\n\n";
-                            $content.= "Click the link to activate your new user:\n\nhttp://" . $server . "/bwapp/user_activation.php?user=" . $login . "&activation_code=" . $activation_code . "\n\n";
-                            $content.= "Greets from bwapp!";
+                            $content.= "Click the link to activate your new user:\n\nhttp://" . $server . "/bWAPP/user_activation.php?user=" . $login . "&activation_code=" . $activation_code . "\n\n";
+                            $content.= "Greets from bWAPP!";
 
                             $status = @mail($email, $subject, $content, "From: $sender");
 
@@ -262,7 +262,7 @@ if(isset($_REQUEST["action"]))
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - New User</title>
+<title>bWAPP - New User</title>
 
 </head>
 
@@ -270,7 +270,7 @@ if(isset($_REQUEST["action"]))
     
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -378,7 +378,7 @@ if(isset($_REQUEST["action"]))
 
 <div id="disclaimer">
 
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
 
 </div>
 

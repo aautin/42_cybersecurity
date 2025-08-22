@@ -1,4 +1,4 @@
-----------------------  bwapp v2.2  -----------------------,portal.php
+----------------------  bWAPP v2.2  -----------------------,portal.php
 / A1 - Injection /,portal.php
 HTML Injection - Reflected (GET),htmli_get.php
 HTML Injection - Reflected (POST),htmli_post.php

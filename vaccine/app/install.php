@@ -2,9 +2,9 @@
 
 /*
 
-bwapp, or a buggy web application, is a free and open source deliberately insecure web application.
+bWAPP, or a buggy web application, is a free and open source deliberately insecure web application.
 It helps security enthusiasts, developers and students to discover and to prevent web vulnerabilities.
-bwapp covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
+bWAPP covers all major known web vulnerabilities, including all risks from the OWASP Top 10 project!
 It is for security-testing and educational purposes only.
 
 Enjoy!
@@ -12,11 +12,11 @@ Enjoy!
 Malik Mesellem
 Twitter: @MME_IT
 
-bwapp is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
+bWAPP is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (http://creativecommons.org/licenses/by-nc-nd/4.0/). Copyright © 2014 MME BVBA. All rights reserved.
 
 */
 
-$message = "Click <a href=\"install.php?install=yes\">here</a> to install bwapp.";
+$message = "Click <a href=\"install.php?install=yes\">here</a> to install bWAPP.";
 $db = 0;
 
 if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
@@ -36,12 +36,12 @@ if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
 
     }
 
-    // Checks if the database 'bwapp' already exists
-    if(!mysqli_select_db($link,"bwapp"))
+    // Checks if the database 'bWAPP' already exists
+    if(!mysqli_select_db($link,"bWAPP"))
     {
 
-        // Creates the database 'bwapp'
-        $sql = "CREATE DATABASE IF NOT EXISTS bwapp";
+        // Creates the database 'bWAPP'
+        $sql = "CREATE DATABASE IF NOT EXISTS bWAPP";
 
         $recordset = $link->query($sql);
 
@@ -52,8 +52,8 @@ if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
 
         }
 
-        // Selects the database 'bwapp'
-         mysqli_select_db($link,"bwapp");
+        // Selects the database 'bWAPP'
+         mysqli_select_db($link,"bWAPP");
 
         // Creates the 'users' table
         $sql = "CREATE TABLE IF NOT EXISTS users (id int(10) NOT NULL AUTO_INCREMENT,login varchar(100) DEFAULT NULL,password varchar(100) DEFAULT NULL,";
@@ -176,14 +176,14 @@ if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
         }
 
 
-        $message = "bwapp has been installed successfully!";
+        $message = "bWAPP has been installed successfully!";
 
     }
 
     else
     {
 
-        $message = "The bwapp database already exists...";
+        $message = "The bWAPP database already exists...";
 
     }
 
@@ -208,7 +208,7 @@ if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
 <!--<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>-->
 <script src="js/html5.js"></script>
 
-<title>bwapp - Installation</title>
+<title>bWAPP - Installation</title>
 
 </head>
 
@@ -216,7 +216,7 @@ if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
 
 <header>
 
-<h1>bwapp</h1>
+<h1>bWAPP</h1>
 
 <h2>an extremely buggy web app !</h2>
 
@@ -281,7 +281,7 @@ if(isset($_REQUEST["install"]) && $_REQUEST["install"] == "yes")
 
 <div id="disclaimer">
 
-    <p>bwapp is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
+    <p>bWAPP is licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img style="vertical-align:middle" src="./images/cc.png"></a> &copy; 2014 MME BVBA / Follow <a href="http://twitter.com/MME_IT" target="_blank">@MME_IT</a> on Twitter and ask for our cheat sheet, containing all solutions! / Need an exclusive <a href="http://www.mmebvba.com" target="_blank">training</a>?</p>
 
 </div>
     
