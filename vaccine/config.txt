@@ -1,0 +1,11 @@
+STEP 1: 
+	in admin/settings.php, set $db_server on "db" (database docker name)
+
+STEP 2:
+	create folder db/init/ in the root of the repo (even if empty)
+
+STEP 3:
+	go to http://localhost:8080/install.php, click on button to install
+
+STEP 4:
+	go to http://localhost:8080/login.php, login with username=bee and password=bug
