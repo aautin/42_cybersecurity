@@ -14,4 +14,9 @@ restart:
 clean:
 	docker-compose down --rmi all --remove-orphans --timeout 3
 
+fclean: clean
+	docker volume rm vaccine_db_data
+
 re: clean all
+
+fre: fclean all
