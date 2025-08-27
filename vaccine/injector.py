@@ -1,7 +1,8 @@
 import requests
 import argparse
+import re
 
-# --------- PARSING --------- #
+# --------- INPUT PARSING --------- #
 def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("url", metavar="URL", type=str)
@@ -53,7 +54,9 @@ def extract_base_url(full_url: str) -> str:
 # ----------------------- #
 
 
-def default_request_record(method: str, full_url: str, headers: dict, body_string: str) -> dict:
+
+# --------- REQUESTS --------- #
+def request_record(method: str, full_url: str, headers: dict, body_string: str) -> dict:
 	request = requests.request(method, full_url, headers=headers, data=body_string if method == "POST" else None)
 	time = request.elapsed.total_seconds()
 	for _ in range(10):
@@ -71,31 +74,86 @@ def default_request_record(method: str, full_url: str, headers: dict, body_strin
 		}
 	}
 
-def detection_request_records(method: str, full_url: str, headers: dict, body_string: str) -> list[dict]:
-	body_params = body_params(body_string)
-	query_params = query_params(extract_query_string(full_url))
-	params = body_params + query_params
+def detection_request_records(method: str, full_url: str, headers: dict, _body_string: str) -> list[dict]:
+	_body_params = body_params(_body_string)
+	_query_params = query_params(extract_query_string(full_url))
+	params = list(_body_params.keys()) + list(_query_params.keys())
 
 	detection_request_records = []
-	
-	# To be continued...
-	# Modify one different parameter for each request with "INJECTED" value
-	# Reassemble body and query strings then request and store the response as a record in detection_request_records
+
+	for param in params:
+		body_params_copy = _body_params.copy()
+		query_params_copy = _query_params.copy()
+		if param in body_params_copy:
+			body_params_copy[param] = "INJECTED"
+		if param in query_params_copy:
+			query_params_copy[param] = "INJECTED"
+
+		detection_request_records.append(request_record(method, assemble_full_url(extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(body_params_copy)))
+
 	return detection_request_records
+# ----------------------- #
+
+
+# --------- RECORD PARSING --------- #
+def _normalize_html(s: str) -> str:
+    s = re.sub(r'(?is)<script.*?</script>|<style.*?</style>', '', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
+def _to_lines(s: str) -> list[str]:
+    s = re.sub(r'>', '>\n', s)                 # break after tags
+    s = re.sub(r'(?<=[.!?])\s+', '\n', s)      # break sentences
+    lines = [ln.strip() for ln in s.splitlines() if ln.strip()]
+    return lines
+
+def only_new_content(base_html: str, other_html: str) -> str:
+    base_set = set(_to_lines(_normalize_html(base_html)))
+    other_lines = _to_lines(_normalize_html(other_html))
+    diff_lines = [ln for ln in other_lines if ln not in base_set]
+    return '\n'.join(diff_lines)
+# ----------------------- #
+
+
+
+def print_records(default_record: dict, detection_records: list[dict]):
+	print("\n[+] Default Request Record:")
+	print("  - Body Parameters:", default_record["body"])
+	print("  - Query Parameters:", default_record["query"])
+	print("  - Response Status Code:", default_record["response"]["status_code"])
+	print("  - Response Time (s):", default_record["response"]["time"])
+	content = default_record["response"]["content"]
+	print("  - Response new content:\n\033[93m", content, "\033[0m\n")
+	print("\n")
+
+	print("[+] Detection Request Records:")
+	for i, record in enumerate(detection_records):
+
+		print(f"  Record {i}:")
+		print("    - Body Parameters:", record["body"])
+		print("    - Query Parameters:", record["query"])
+		print("    - Response Status Code:", record["response"]["status_code"])
+		print("    - Response Time (s):", record["response"]["time"])
+		content = record["response"]["content"]
+		print("    - Response new content:\n\033[93m", only_new_content(default_record["response"]["content"], content), "\033[0m\n")
+		print("\n")
+
 
 def main():
 	method, url, headers, body = parse_args()
 
 	try:
 		records = {
-			"default": default_request_record(method, url, headers, body),
+			"default": request_record(method, url, headers, body),
 			"detections": detection_request_records(method, url, headers, body)
 		}
 		# To be continued...
 		# Print the records body and query parameters
 
-	except:
-		print("[!] An error occurred while making the requests.")
+		print_records(records["default"], records["detections"])
+
+	except requests.RequestException as e:
+		print("[!] An error occurred while making the requests:", e)
 
 if __name__ == "__main__":
 	main()
