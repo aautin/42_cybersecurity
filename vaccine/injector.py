@@ -511,12 +511,15 @@ def main():
 				print(f"[+] Extracted Column Names for table '{table}':\n{', '.join(columns_names)}\n")
 
 				datas = []
+				max_len = 0
 				for column in columns_names:
 					data = extract_data(method, url, headers, body, injection_point, table, db_type, records["default"], visible_index, num_columns, column)
 					print(f"[+] Extracted Data for column '{column}' in table '{table}':\n{data}\n")
 					datas.append(data)
+					max_len = max(max_len, len(data))
 
-				rows = list(zip(*datas)) if datas else []
+				padded_datas = [data + [''] * (max_len - len(data)) for data in datas]
+				rows = list(zip(*padded_datas)) if padded_datas else []
 				write_table_to_csv("data_dump", table, columns_names, rows)
 
 	except requests.RequestException as e:
