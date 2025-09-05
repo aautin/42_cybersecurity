@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - bwapp_net
+
+  back:
+    build: ./back
+    depends_on:
+      - db
+    volumes:
+      - ./app:/var/www/html
+    networks:
+      - bwapp_net
+
+  front:
+    build: ./front
+    depends_on:
+      - back
+    ports:
+      - "8080:80"
+    networks:
+      - bwapp_net
+
+networks:
+  bwapp_net:
+
+volumes:
+  db_data:

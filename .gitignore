@@ -12,3 +12,5 @@ ft_otp/ft_otp
 stockholm/key
 stockholm/key.pub
 stockholm/venv
+*/venv
+*/data_dump/*

