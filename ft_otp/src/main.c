@@ -110,8 +110,8 @@ int main(int argc, char** argv)
 	if (argc != 3 || argv[1][0] != '-' || (argv[1][1] != 'k' && argv[1][1] != 'g'))
 		wexit("Usage: ./ft_otp -k/-g FILENAME\n", 1);
 
-	if (argv[1][1] == 'k')
+	if (argv[1][1] == 'g')
 		set_key(argv[2]);
-	else if (argv[1][1] == 'g')
-		printf("%d\n", get_code("key.hex"));
+	else if (argv[1][1] == 'k')
+		printf("%d\n", get_code(argv[2]));
 }
