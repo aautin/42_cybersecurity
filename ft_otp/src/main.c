@@ -44,9 +44,9 @@ void	set_key(char* filename)
 	if (fd_in == -1)
 		pexit(filename, 1);
 
-	int	fd_out = open("key.hex", O_RDWR | O_CREAT | O_TRUNC, 440);
+	int	fd_out = open("ft_otp.key", O_RDWR | O_CREAT | O_TRUNC, 440);
 	if (fd_out == -1)
-		pexit("key.hex", 1);
+		pexit("ft_otp.key", 1);
 
 	char* key = get_content_from_fd(fd_in);
 	if (key == NULL)
