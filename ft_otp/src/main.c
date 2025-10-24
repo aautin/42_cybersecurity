@@ -48,7 +48,8 @@ void	set_key(char* filename)
 	if (fd_out == -1)
 		pexit("ft_otp.key", 1);
 
-	char* key = get_content_from_fd(fd_in);
+	ssize_t len;
+	char* key = get_content_from_fd(fd_in, &len);
 	if (key == NULL)
 		pexit("get_content_from_fd()", 1);
 
@@ -76,7 +77,8 @@ uint32_t get_code(char* filename)
 	if (fd == -1)
 		pexit(filename, 1);
 
-	char* key = get_content_from_fd(fd);
+	ssize_t len;
+	char* key = get_content_from_fd(fd, &len);
 	if (key == NULL)
 		pexit("get_content_from_fd()", 1);
 
