@@ -54,7 +54,7 @@ void	set_key(char* filename)
 
 	int	i;
 	for (i = 0; key[i] != '\0'; ++i) {
-		if (hex_char_to_val(key[i] != -1))
+		if (hex_char_to_val(key[i]) != -1)
 			continue;
 		break;
 	}
@@ -87,7 +87,7 @@ uint32_t get_code(char* filename)
 		
 	int	i;
 	for (i = 0; key[i] != '\0'; ++i) {
-		if (hex_char_to_val(key[i] != -1))
+		if (hex_char_to_val(key[i]) != -1)
 			continue;
 		break;
 	}
