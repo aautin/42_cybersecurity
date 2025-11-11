@@ -115,5 +115,5 @@ int main(int argc, char** argv)
 	if (argv[1][1] == 'g')
 		set_key(argv[2]);
 	else if (argv[1][1] == 'k')
-		printf("%d\n", get_code(argv[2]));
+		printf("%06d\n", get_code(argv[2]));
 }
